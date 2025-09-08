@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import "../styles.css";
 
 export default function Header() {
@@ -12,10 +13,11 @@ export default function Header() {
             </div>
 
             <nav>
-                <a href="#about">About</a>
-                <a href="#services">Services</a>
-                <a href="#portfolio">Portfolio</a>
-                <a href="#contact">Contact</a>
+                <Link to="/">Home</Link>
+                <Link to="/about">About</Link>
+                <Link to="/services">Services</Link>
+                <Link to="/portfolio">Portfolio</Link>
+                <Link to="/contact">Contact</Link>
             </nav>
         </header>
     );
