@@ -6,6 +6,9 @@ import Problem from "./components/Problem";
 import Solution from "./components/Solution";
 import About from "./components/About";
 import Services from "./components/Services";
+import Portfolio from "./components/Portfolio";
+import Contact from "./components/Contact";
+import Terms from "./components/Terms";
 import Footer from "./components/Footer";
 import "./styles.css";
 
@@ -33,9 +36,14 @@ export default function App() {
                     {/* Services Page */}
                     <Route path="/services" element={<Services />} />
 
-                    {/* Future Pages */}
-                    {/* <Route path="/portfolio" element={<Portfolio />} /> */}
-                    {/* <Route path="/contact" element={<Contact />} /> */}
+                    {/* Portfolio Page */}
+                    <Route path="/portfolio" element={<Portfolio />} />
+
+                    {/* Contact Page */}
+                    <Route path="/contact" element={<Contact />} />
+
+                    {/* Terms Page */}
+                    <Route path="/terms" element={<Terms />} />
                 </Routes>
             </main>
             <Footer />

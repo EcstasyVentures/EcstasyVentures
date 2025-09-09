@@ -598,3 +598,290 @@ footer .copyright {
         padding: 0 20px;
     }
 }
+/* --- Portfolio Page Specific Styles --- */
+
+/* Main content container for padding */
+.container {
+    padding: 0 100px;
+}
+
+/* Sections for consistent vertical spacing */
+.section {
+    padding: 100px 0;
+    text-align: center;
+}
+
+.center {
+    text-align: center;
+}
+
+/* Specific styling for the intro paragraph */
+.portfolio-intro {
+    font-family: 'Times New Roman', Times, serif;
+    font-size: 20px;
+    max-width: 70ch;
+    margin: 10px auto 0;
+    color: var(--muted);
+}
+
+/* Grid layout for portfolio items */
+.grid.grid-3 {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 40px;
+    margin-top: 50px;
+}
+
+/* Shared card styles for portfolio items */
+.card {
+    background: var(--card-bg);
+    padding: 35px;
+    border-radius: 25px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+    transition: transform 0.4s ease, box-shadow 0.4s ease;
+    text-align: center;
+}
+
+.card:hover {
+    transform: translateY(-12px);
+    box-shadow: 0 20px 45px rgba(0,0,0,0.15);
+}
+
+.card strong {
+    font-size: 20px;
+    color: var(--text-dark);
+    font-weight: 700;
+}
+
+.card .small {
+    margin-top: 8px;
+    color: var(--text-muted);
+    font-weight: 500;
+    font-size: 17px;
+    line-height: 1.5;
+}
+
+/* Style for the portfolio images */
+.portfolio-image {
+    width: 100%;
+    height: 140px;
+    object-fit: cover;
+    border-radius: 8px;
+    margin-bottom: 8px;
+}
+
+/* --- Responsive styles for the Portfolio page --- */
+@media (max-width: 1200px) {
+    .container {
+        padding: 0 40px;
+    }
+    .grid.grid-3 {
+        grid-template-columns: 1fr;
+    }
+    .section {
+        padding: 60px 0;
+    }
+    .section h3 {
+        font-size: 32px;
+    }
+}
+
+@media (max-width: 768px) {
+    .container {
+        padding: 0 20px;
+    }
+}
+/* --- Contact Page Specific Styles --- */
+
+/* Main content container for padding */
+.container {
+    padding: 0 100px;
+}
+
+/* Sections for consistent vertical spacing */
+.section {
+    padding: 100px 0;
+    text-align: center;
+}
+
+.center {
+    text-align: center;
+}
+
+/* Specific styling for the intro paragraph */
+.contact-intro {
+    font-family: 'Times New Roman', Times, serif;
+    font-size: 20px;
+    max-width: 70ch;
+    margin: 10px auto 0;
+    color: var(--muted);
+}
+
+/* Form container */
+.contact-form {
+    max-width: 600px;
+    margin: 40px auto;
+    text-align: left;
+}
+
+/* Form inputs and textarea */
+.input {
+    width: 100%;
+    padding: 15px;
+    margin-bottom: 20px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 16px;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.input:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(230, 57, 70, 0.2);
+}
+
+.input::placeholder {
+    color: #999;
+}
+
+/* Button container */
+.center-cta {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    margin-top: 20px;
+}
+
+/* Buttons */
+.btn {
+    padding: 14px 28px;
+    border-radius: 30px;
+    font-weight: 700;
+    font-size: 16px;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.btn-primary {
+    /* Set the background to the gradient shown in the image */
+    background: linear-gradient(to right, #e63946, #c0333e);
+    color: white;
+    border: none;
+    box-shadow: 0 8px 20px rgba(230, 57, 70, 0.3);
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 25px rgba(230, 57, 70, 0.4);
+    /* Change the background on hover to a slightly different gradient */
+    background: linear-gradient(to right, #c0333e, #e63946);
+}
+
+.btn:not(.btn-primary) {
+    border: 2px solid #ccc;
+    color: #555;
+    background: white;
+}
+
+.btn:not(.btn-primary):hover {
+    transform: translateY(-2px);
+    background: #f8f8f8;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+}
+
+/* --- Responsive styles for the Contact page --- */
+@media (max-width: 1200px) {
+    .container {
+        padding: 0 40px;
+    }
+    .section {
+        padding: 60px 0;
+    }
+    .section h3 {
+        font-size: 32px;
+    }
+}
+
+@media (max-width: 768px) {
+    .container {
+        padding: 0 20px;
+    }
+    .center-cta {
+        flex-direction: column;
+        gap: 10px;
+    }
+    .btn {
+        width: 100%;
+        text-align: center;
+    }
+}
+/* --- Terms & Conditions Page Specific Styles --- */
+
+/* Main content container for padding */
+.terms-container {
+    padding: 0 100px;
+}
+
+/* Sections for consistent vertical spacing */
+.terms-section {
+    padding: 100px 0;
+    text-align: left;
+}
+
+.terms-section h2 {
+    color: var(--orange);
+    font-size: 30px;
+}
+
+.terms-section h3 {
+    margin-top: 30px;
+    font-size: 22px;
+}
+
+.terms-section p {
+    font-size: 16px;
+    line-height: 1.6;
+    margin-bottom: 10px;
+    color: #444;
+}
+
+/* Specific styling for the intro paragraph */
+.terms-intro {
+    font-family: 'Times New Roman', Times, serif;
+    font-size: 18px;
+    max-width: 70ch;
+    margin: 10px auto 0;
+    color: var(--muted);
+}
+
+.last-updated {
+    color: var(--muted);
+    font-size: 14px;
+    margin-top: 20px;
+}
+
+
+/* --- Responsive styles for the Terms & Conditions page --- */
+@media (max-width: 1200px) {
+    .terms-container {
+        padding: 0 40px;
+    }
+    .terms-section {
+        padding: 60px 0;
+    }
+    .terms-section h2 {
+        font-size: 28px;
+    }
+    .terms-section h3 {
+        font-size: 20px;
+    }
+}
+
+@media (max-width: 768px) {
+    .terms-container {
+        padding: 0 20px;
+    }
+}
+

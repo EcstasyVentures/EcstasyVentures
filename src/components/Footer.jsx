@@ -1,3 +1,5 @@
+import React from "react";
+import { Link } from "react-router-dom";
 import { FaLinkedin, FaInstagram, FaEnvelope } from "react-icons/fa";
 import "../styles.css";
 
@@ -20,7 +22,7 @@ export default function Footer() {
                 <a href="https://www.instagram.com/ecstasy_ventures_" target="_blank" rel="noreferrer"><FaInstagram style={{ margin: '0 5px' }} /></a>
             </div>
             <div>
-                <a href="terms.html">Terms & Conditions</a> • <a href="privacy.html">Privacy Policy</a>
+                <Link to="/terms">Terms & Conditions</Link> • <Link to="/privacy">Privacy Policy</Link>
             </div>
         </footer>
     );
