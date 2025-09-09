@@ -1,4 +1,5 @@
 import "../styles.css";
+import { Link } from "react-router-dom";
 
 export default function Hero() {
     return (
@@ -14,8 +15,8 @@ export default function Hero() {
                 </p>
 
                 <div className="hero-actions">
-                    <a href="#contact" className="btn-primary">Work with Us</a>
-                    <a href="#about" className="btn">Learn More</a>
+                    <Link to="/contact" className="btn-primary">Work with Us</Link>
+                    <Link to="/about" className="btn">Learn More</Link>
                 </div>
             </div>
 
