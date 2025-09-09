@@ -10,9 +10,21 @@ export default function Dashboard() {
     const [notes, setNotes] = useState("");
     const [task, setTask] = useState("");
     const [selectedAdmin, setSelectedAdmin] = useState("");
-    const admins = ["Admin1", "Admin2", "Admin3"];
+    const [showAddPopup, setShowAddPopup] = useState(false);
+    const [newItem, setNewItem] = useState({});
 
-    // Temporary in-memory data
+    const admins = [
+        "Super Admin",
+        "Operations Admin",
+        "Venture Partner",
+        "Finance Admin",
+        "Legal Admin",
+        "Growth/Marketing",
+        "Tech Lead",
+        "Founder (External)"
+    ];
+
+
     const [kpis, setKpis] = useState([
         { id: 1, name: "Active Ventures", value: "12" },
         { id: 2, name: "Portfolio ARR", value: "$3.5M" },
@@ -31,8 +43,29 @@ export default function Dashboard() {
         { id: 1, category: "Finance", message: "Invoice approved" },
     ]);
 
+    // --- Generic Functions ---
     const deleteItem = (list, setList, id) => {
         setList(list.filter((item) => item.id !== id));
+    };
+
+    const handleUpdateItem = (list, setList, id, field, value) => {
+        setList(
+            list.map((item) => (item.id === id ? { ...item, [field]: value } : item))
+        );
+    };
+
+    const handleAddItem = (section) => {
+        const listMap = { KPIs: kpis, Approvals: approvals, Calendar: calendar, Notifications: notifications };
+        const setMap = { KPIs: setKpis, Approvals: setApprovals, Calendar: setCalendar, Notifications: setNotifications };
+
+        if (Object.values(newItem).some((v) => v === "" || v === undefined)) {
+            alert("Please fill all fields");
+            return;
+        }
+
+        setMap[section]([...listMap[section], { id: Date.now(), ...newItem }]);
+        setNewItem({});
+        setShowAddPopup(false);
     };
 
     const handleScheduleMeeting = () => {
@@ -50,9 +83,42 @@ export default function Dashboard() {
         }
     };
 
+    const handleSaveNotes = () => {
+        if (notes) {
+            alert(`Notes saved: ${notes}`);
+            setNotes("");
+            setShowNotes(false);
+        } else {
+            alert("Write some notes first!");
+        }
+    };
+
+    // --- Helper to render table headers dynamically ---
+    const renderHeaders = (section) => {
+        const headersMap = {
+            KPIs: ["Name", "Value"],
+            Approvals: ["Type", "Count"],
+            Calendar: ["Event Title", "Date"],
+            Notifications: ["Category", "Message"],
+        };
+        return headersMap[section];
+    };
+
+    // --- Helper to get list & setter dynamically ---
+    const getListAndSetter = (section) => {
+        const listMap = { KPIs: kpis, Approvals: approvals, Calendar: calendar, Notifications: notifications };
+        const setMap = { KPIs: setKpis, Approvals: setApprovals, Calendar: setCalendar, Notifications: setNotifications };
+        return [listMap[section], setMap[section]];
+    };
+
+    // --- Helper to get section title ---
+    const getSectionTitle = (section) => {
+        const icons = { KPIs: "📊", Approvals: "✅", Calendar: "📅", Notifications: "🔔" };
+        return `${icons[section]} ${section}`;
+    };
+
     return (
         <div className="db-container">
-            {/* Header */}
             <header className="db-header">
                 <h1>Welcome, {role}</h1>
             </header>
@@ -62,11 +128,21 @@ export default function Dashboard() {
                 <aside className="db-sidebar">
                     <h2>Menu</h2>
                     <ul>
-                        <li onClick={() => setActiveSection("KPIs")}>📊 KPIs</li>
-                        <li onClick={() => setActiveSection("Approvals")}>✅ Approvals</li>
-                        <li onClick={() => setActiveSection("Calendar")}>📅 Calendar</li>
-                        <li onClick={() => setActiveSection("Notifications")}>🔔 Notifications</li>
-                        <li onClick={() => setActiveSection(null)}>📔 Diary</li>
+                        {["KPIs", "Approvals", "Calendar", "Notifications"].map((section) => (
+                            <li
+                                key={section}
+                                className={activeSection === section ? "active" : ""}
+                                onClick={() => setActiveSection(section)}
+                            >
+                                {getSectionTitle(section)}
+                            </li>
+                        ))}
+                        <li
+                            className={activeSection === null ? "active" : ""}
+                            onClick={() => setActiveSection(null)}
+                        >
+                            📔 Diary
+                        </li>
                     </ul>
                 </aside>
 
@@ -74,162 +150,131 @@ export default function Dashboard() {
                 <main className="db-workspace">
                     {/* Diary */}
                     {!activeSection && (
-                        <div className="db-diary flashy">
+                        <div className="db-diary">
                             <h2>📔 Your Diary</h2>
                             <p>Keep track of your notes, tasks, and meetings!</p>
-                            <button onClick={() => setShowNotes(true)}>📝 Take Notes</button>
-                            <button onClick={handleScheduleMeeting}>📆 Schedule Meeting</button>
-                            <button onClick={() => setShowTaskBox(true)}>✅ Add Task</button>
+                            <div className="diary-actions">
+                                <button onClick={() => setShowNotes(true)}>📝 Take Notes</button>
+                                <button onClick={handleScheduleMeeting}>📆 Schedule Meeting</button>
+                                <button onClick={() => setShowTaskBox(true)}>✅ Add Task</button>
+                            </div>
 
                             {/* Notes Popup */}
                             {showNotes && (
-                                <div className="popup">
-                                    <textarea
-                                        value={notes}
-                                        onChange={(e) => setNotes(e.target.value)}
-                                        placeholder="Write your notes here..."
-                                    />
-                                    <div className="popup-actions">
-                                        <button onClick={() => setShowNotes(false)}>Close</button>
+                                <div className="popup-overlay">
+                                    <div className="popup">
+                                        <h3>Take a Note</h3>
+                                        <textarea
+                                            value={notes}
+                                            onChange={(e) => setNotes(e.target.value)}
+                                            placeholder="Write your notes here..."
+                                        />
+                                        <div className="popup-actions">
+                                            <button onClick={handleSaveNotes}>Submit</button>
+                                            <button className="secondary" onClick={() => setShowNotes(false)}>Close</button>
+                                        </div>
                                     </div>
                                 </div>
                             )}
 
                             {/* Task Popup */}
                             {showTaskBox && (
-                                <div className="popup">
-                                    <h3>Assign Task</h3>
-                                    <select
-                                        value={selectedAdmin}
-                                        onChange={(e) => setSelectedAdmin(e.target.value)}
-                                    >
-                                        <option value="">-- Select Admin --</option>
-                                        {admins.map((a, idx) => (
-                                            <option key={idx} value={a}>{a}</option>
-                                        ))}
-                                    </select>
-                                    <input
-                                        type="text"
-                                        placeholder="Enter task..."
-                                        value={task}
-                                        onChange={(e) => setTask(e.target.value)}
-                                    />
-                                    <div className="popup-actions">
-                                        <button onClick={handleSaveTask}>Save</button>
-                                        <button onClick={() => setShowTaskBox(false)}>Cancel</button>
+                                <div className="popup-overlay">
+                                    <div className="popup">
+                                        <h3>Assign a Task</h3>
+                                        <select
+                                            value={selectedAdmin}
+                                            onChange={(e) => setSelectedAdmin(e.target.value)}
+                                        >
+                                            <option value="">-- Select Admin --</option>
+                                            {admins.map((a, idx) => (
+                                                <option key={idx} value={a}>{a}</option>
+                                            ))}
+                                        </select>
+                                        <input
+                                            type="text"
+                                            placeholder="Enter task..."
+                                            value={task}
+                                            onChange={(e) => setTask(e.target.value)}
+                                        />
+                                        <div className="popup-actions">
+                                            <button onClick={handleSaveTask}>Submit</button>
+                                            <button className="secondary" onClick={() => setShowTaskBox(false)}>Cancel</button>
+                                        </div>
                                     </div>
                                 </div>
                             )}
                         </div>
                     )}
 
-                    {/* KPIs */}
-                    {activeSection === "KPIs" && (
-                        <div className="db-section scrollable">
-                            <h2>📊 KPIs</h2>
-                            <table>
-                                <thead>
-                                <tr>
-                                    <th>Name</th>
-                                    <th>Value</th>
-                                    <th>Actions</th>
-                                </tr>
-                                </thead>
-                                <tbody>
-                                {kpis.map((kpi) => (
-                                    <tr key={kpi.id}>
-                                        <td>{kpi.name}</td>
-                                        <td>{kpi.value}</td>
-                                        <td>
-                                            <button onClick={() => deleteItem(kpis, setKpis, kpi.id)}>Delete</button>
-                                        </td>
-                                    </tr>
-                                ))}
-                                </tbody>
-                            </table>
-                        </div>
-                    )}
+                    {/* Sections */}
+                    {["KPIs", "Approvals", "Calendar", "Notifications"].map((section) => {
+                        const [list, setList] = getListAndSetter(section);
+                        const headers = renderHeaders(section);
 
-                    {/* Approvals */}
-                    {activeSection === "Approvals" && (
-                        <div className="db-section scrollable">
-                            <h2>✅ Approvals</h2>
-                            <table>
-                                <thead>
-                                <tr>
-                                    <th>Type</th>
-                                    <th>Count</th>
-                                    <th>Actions</th>
-                                </tr>
-                                </thead>
-                                <tbody>
-                                {approvals.map((a) => (
-                                    <tr key={a.id}>
-                                        <td>{a.type}</td>
-                                        <td>{a.count}</td>
-                                        <td>
-                                            <button onClick={() => deleteItem(approvals, setApprovals, a.id)}>Delete</button>
-                                        </td>
-                                    </tr>
-                                ))}
-                                </tbody>
-                            </table>
-                        </div>
-                    )}
+                        return activeSection === section && (
+                            <div key={section} className="db-section scrollable">
+                                <div className="section-header">
+                                    <h2>{getSectionTitle(section)}</h2>
+                                    <span className="add-icon" onClick={() => setShowAddPopup(section)}>✏️</span>
+                                </div>
 
-                    {/* Calendar */}
-                    {activeSection === "Calendar" && (
-                        <div className="db-section scrollable">
-                            <h2>📅 Calendar</h2>
-                            <table>
-                                <thead>
-                                <tr>
-                                    <th>Event Title</th>
-                                    <th>Date</th>
-                                    <th>Actions</th>
-                                </tr>
-                                </thead>
-                                <tbody>
-                                {calendar.map((c) => (
-                                    <tr key={c.id}>
-                                        <td>{c.title}</td>
-                                        <td>{c.date}</td>
-                                        <td>
-                                            <button onClick={() => deleteItem(calendar, setCalendar, c.id)}>Delete</button>
-                                        </td>
-                                    </tr>
-                                ))}
-                                </tbody>
-                            </table>
-                        </div>
-                    )}
+                                {/* Add Item Popup */}
+                                {showAddPopup === section && (
+                                    <div className="popup-overlay">
+                                        <div className="popup">
+                                            <h3>Add New {section.slice(0, -1)}</h3>
+                                            {headers.map((h, idx) => (
+                                                <input
+                                                    key={idx}
+                                                    type="text"
+                                                    placeholder={h}
+                                                    value={newItem[h.toLowerCase()] || ""}
+                                                    onChange={(e) => setNewItem({ ...newItem, [h.toLowerCase()]: e.target.value })}
+                                                />
+                                            ))}
+                                            <div className="popup-actions">
+                                                <button onClick={() => handleAddItem(section)}>Submit</button>
+                                                <button className="secondary" onClick={() => { setShowAddPopup(false); setNewItem({}); }}>Cancel</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
 
-                    {/* Notifications */}
-                    {activeSection === "Notifications" && (
-                        <div className="db-section scrollable">
-                            <h2>🔔 Notifications</h2>
-                            <table>
-                                <thead>
-                                <tr>
-                                    <th>Category</th>
-                                    <th>Message</th>
-                                    <th>Actions</th>
-                                </tr>
-                                </thead>
-                                <tbody>
-                                {notifications.map((n) => (
-                                    <tr key={n.id}>
-                                        <td>{n.category}</td>
-                                        <td>{n.message}</td>
-                                        <td>
-                                            <button onClick={() => deleteItem(notifications, setNotifications, n.id)}>Delete</button>
-                                        </td>
+                                <table>
+                                    <thead>
+                                    <tr>
+                                        {headers.map((h, idx) => <th key={idx}>{h}</th>)}
+                                        <th>Actions</th>
                                     </tr>
-                                ))}
-                                </tbody>
-                            </table>
-                        </div>
-                    )}
+                                    </thead>
+                                    <tbody>
+                                    {list.map((item) => (
+                                        <tr key={item.id}>
+                                            {headers.map((h, idx) => <td key={idx}>{item[h.toLowerCase()]}</td>)}
+                                            <td>
+                                                <select onChange={(e) => {
+                                                    const action = e.target.value;
+                                                    if (action === "delete") deleteItem(list, setList, item.id);
+                                                    if (action === "update") {
+                                                        const field = headers[0].toLowerCase(); // first editable field
+                                                        const newVal = prompt(`Enter new ${headers[0]}:`, item[field]);
+                                                        if (newVal) handleUpdateItem(list, setList, item.id, field, newVal);
+                                                    }
+                                                    e.target.value = "";
+                                                }}>
+                                                    <option value="">--Select--</option>
+                                                    <option value="update">Update</option>
+                                                    <option value="delete">Delete</option>
+                                                </select>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        );
+                    })}
                 </main>
             </div>
         </div>

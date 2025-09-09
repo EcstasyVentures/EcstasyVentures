@@ -1,4 +1,4 @@
-// server.js
+
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
@@ -6,11 +6,9 @@ const bodyParser = require("body-parser");
 
 const app = express();
 
-// ✅ Middleware
 app.use(cors());
 app.use(bodyParser.json());
 
-// ✅ Connect to MongoDB
 mongoose.connect("mongodb://127.0.0.1:27017/test", {
     useNewUrlParser: true,
     useUnifiedTopology: true,
@@ -22,7 +20,6 @@ db.once("open", () => {
     console.log("✅ Connected to MongoDB");
 });
 
-// ✅ Admin Schema
 const AdminSchema = new mongoose.Schema({
     username: { type: String, required: true },
     password: { type: String, required: true },
@@ -31,12 +28,12 @@ const AdminSchema = new mongoose.Schema({
 
 const Admin = mongoose.model("Admin", AdminSchema);
 
-// ✅ Login Route
+
 app.post("/login", async (req, res) => {
     const { username, password } = req.body;
 
     try {
-        // Find admin with username and password
+        
         const admin = await Admin.findOne({ username, password });
         if (admin) {
             return res.json({
@@ -57,7 +54,7 @@ app.post("/login", async (req, res) => {
     }
 });
 
-// ✅ Start server
+
 const PORT = 5000;
 app.listen(PORT, () => {
     console.log(`✅ Server running on http://localhost:${PORT}`);
