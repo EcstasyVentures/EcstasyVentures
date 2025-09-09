@@ -1,5 +1,5 @@
 import React from "react";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, useLocation } from "react-router-dom";
 import Header from "./components/Header";
 import Hero from "./components/Hero";
 import Problem from "./components/Problem";
@@ -10,13 +10,26 @@ import Portfolio from "./components/Portfolio";
 import Contact from "./components/Contact";
 import Terms from "./components/Terms";
 import Footer from "./components/Footer";
+import Dashboard from "./components/Dashboard";
 import "./styles.css";
+
+function Layout({ children }) {
+    const location = useLocation();
+    const hideHeaderFooter = location.pathname === "/dashboard";
+
+    return (
+        <>
+            {!hideHeaderFooter && <Header />}
+            <main>{children}</main>
+            {!hideHeaderFooter && <Footer />}
+        </>
+    );
+}
 
 export default function App() {
     return (
         <Router>
-            <Header />
-            <main>
+            <Layout>
                 <Routes>
                     {/* Home Page */}
                     <Route
@@ -29,24 +42,17 @@ export default function App() {
                             </>
                         }
                     />
-
-                    {/* About Page */}
+                    {/* Other Pages */}
                     <Route path="/about" element={<About />} />
-
-                    {/* Services Page */}
                     <Route path="/services" element={<Services />} />
-
-                    {/* Portfolio Page */}
                     <Route path="/portfolio" element={<Portfolio />} />
-
-                    {/* Contact Page */}
                     <Route path="/contact" element={<Contact />} />
-
-                    {/* Terms Page */}
                     <Route path="/terms" element={<Terms />} />
+
+                    {/* Dashboard (no header/footer) */}
+                    <Route path="/dashboard" element={<Dashboard />} />
                 </Routes>
-            </main>
-            <Footer />
+            </Layout>
         </Router>
     );
 }
