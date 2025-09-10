@@ -16,7 +16,6 @@ export default function Header() {
                         <p>By a startup. For the startups.</p>
                     </div>
                 </div>
-
                 <nav>
                     <Link to="/">Home</Link>
                     <Link to="/about">About</Link>
