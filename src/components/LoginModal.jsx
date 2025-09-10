@@ -9,23 +9,21 @@ export default function LoginModal({ onClose }) {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-
         try {
             const res = await fetch("http://localhost:5000/login", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ username, password }),
             });
-
             const data = await res.json();
-
             if (data.success) {
                 alert("✅ Login Successful!");
-                // Save role or username in localStorage/sessionStorage
-                localStorage.setItem("username", data.username); // store username
-                localStorage.setItem("role", data.role); // store role
+                // Save user info in localStorage
+                localStorage.setItem("username", data.username);
+                localStorage.setItem("role", data.role);
+                localStorage.setItem("permissions", JSON.stringify(data.permissions));
                 onClose();
-                navigate("/dashboard"); // redirect to dashboard
+                navigate("/dashboard");
             } else {
                 alert("❌ " + data.message);
             }

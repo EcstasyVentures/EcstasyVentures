@@ -8,7 +8,6 @@ import {
     FiUserCheck, FiTool, FiShield, FiDroplet, FiAward, FiBriefcase, FiTarget, FiZap, FiGrid,
     FiUserPlus, FiCreditCard as FiCard, FiImage, FiVideo, FiFile, FiSave, FiEye, FiPlay
 } from "react-icons/fi";
-
 import "../styles.css";
 
 export default function Dashboard() {
@@ -51,10 +50,13 @@ export default function Dashboard() {
     useEffect(() => {
         const username = localStorage.getItem("username");
         const role = localStorage.getItem("role");
-        if (!username || role !== "admin") {
+
+        // Check if user exists and has a valid role (not checking for specific "admin" role)
+        if (!username || !role) {
             navigate("/");
             return;
         }
+
         setUser({ username, role });
         // Initialize with empty data
         initializeEmptyData();
@@ -2683,7 +2685,7 @@ export default function Dashboard() {
                             </div>
                             <div className="user-info">
                                 <p>{user?.username}</p>
-                                <span>Admin</span>
+                                <span>{user?.role}</span>
                             </div>
                         </div>
                     </div>

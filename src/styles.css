@@ -2203,3 +2203,1925 @@ body {
         width: 100%;
     }
 }
+/* Add this to your existing styles.css */
+.access-denied {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 50vh;
+    text-align: center;
+    padding: 2rem;
+}
+
+.access-denied h2 {
+    color: #e74c3c;
+    margin-bottom: 1rem;
+    font-size: 2rem;
+}
+
+.access-denied p {
+    font-size: 1.2rem;
+    color: #7f8c8d;
+}/* Deals & Equity Section */
+.deals-equity {
+    padding: 20px;
+}
+
+.deals-equity .section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.deals-equity .section-header h2 {
+    color: #333;
+    font-size: 24px;
+    font-weight: 600;
+}
+
+.deals-equity .sub-tabs {
+    display: flex;
+    border-bottom: 1px solid #e0e0e0;
+    margin-bottom: 20px;
+}
+
+.deals-equity .sub-tab {
+    display: flex;
+    align-items: center;
+    padding: 12px 20px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    color: #666;
+    transition: all 0.3s ease;
+    border-bottom: 3px solid transparent;
+}
+
+.deals-equity .sub-tab:hover {
+    color: #333;
+    background: rgba(0, 31, 63, 0.05);
+}
+
+.deals-equity .sub-tab.active {
+    color: #001f3f;
+    border-bottom-color: #001f3f;
+}
+
+.deals-equity .sub-tab svg {
+    margin-right: 8px;
+    font-size: 16px;
+}
+
+.deals-equity .sub-tab-content {
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    padding: 25px;
+}
+
+.deals-equity .data-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.deals-equity .data-table th,
+.deals-equity .data-table td {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.deals-equity .data-table th {
+    background: #f9f9f9;
+    font-weight: 600;
+    color: #555;
+}
+
+.deals-equity .data-table tr:hover {
+    background: #f9f9f9;
+}
+
+.deals-equity .status-badge {
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 500;
+    text-transform: uppercase;
+}
+
+.deals-equity .status-badge.draft {
+    background: #f0f0f0;
+    color: #666;
+}
+
+.deals-equity .status-badge.pending {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.deals-equity .status-badge.signed {
+    background: #d4edda;
+    color: #155724;
+}
+
+.deals-equity .table-actions {
+    display: flex;
+    gap: 5px;
+}
+
+.deals-equity .table-actions .btn-icon {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 5px;
+    border-radius: 4px;
+    transition: background 0.3s ease;
+}
+
+.deals-equity .table-actions .btn-icon:hover {
+    background: #f0f0f0;
+}
+
+.deals-equity .empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: #666;
+}
+
+.deals-equity .empty-state p {
+    margin-bottom: 20px;
+    font-size: 16px;
+}
+
+.deals-equity .empty-state .btn-primary {
+    padding: 10px 20px;
+    background: #001f3f;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: background 0.3s ease;
+}
+
+.deals-equity .empty-state .btn-primary:hover {
+    background: #001530;
+}
+/* Growth & Marketing Section */
+.growth-marketing {
+    padding: 20px;
+}
+
+.growth-marketing .section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.growth-marketing .section-header h2 {
+    color: #333;
+    font-size: 24px;
+    font-weight: 600;
+}
+
+.growth-marketing .sub-tabs {
+    display: flex;
+    border-bottom: 1px solid #e0e0e0;
+    margin-bottom: 20px;
+}
+
+.growth-marketing .sub-tab {
+    display: flex;
+    align-items: center;
+    padding: 12px 20px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    color: #666;
+    transition: all 0.3s ease;
+    border-bottom: 3px solid transparent;
+}
+
+.growth-marketing .sub-tab:hover {
+    color: #333;
+    background: rgba(0, 31, 63, 0.05);
+}
+
+.growth-marketing .sub-tab.active {
+    color: #001f3f;
+    border-bottom-color: #001f3f;
+}
+
+.growth-marketing .sub-tab svg {
+    margin-right: 8px;
+    font-size: 16px;
+}
+
+.growth-marketing .sub-tab-content {
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    padding: 25px;
+}
+
+/* Content Calendar */
+.growth-marketing .calendar-view .calendar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.growth-marketing .calendar-view .calendar-nav {
+    display: flex;
+    gap: 10px;
+}
+
+.growth-marketing .calendar-view .calendar-nav .btn-icon {
+    background: #f0f0f0;
+    border: none;
+    border-radius: 4px;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background 0.3s ease;
+}
+
+.growth-marketing .calendar-view .calendar-nav .btn-icon:hover {
+    background: #e0e0e0;
+}
+
+.growth-marketing .content-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.growth-marketing .content-item {
+    display: flex;
+    align-items: center;
+    padding: 15px;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    background: #fff;
+    transition: box-shadow 0.3s ease;
+}
+
+.growth-marketing .content-item:hover {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.growth-marketing .content-date {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 60px;
+    height: 60px;
+    background: #f9f9f9;
+    border-radius: 8px;
+    margin-right: 15px;
+}
+
+.growth-marketing .content-day {
+    font-size: 18px;
+    font-weight: 600;
+    color: #333;
+}
+
+.growth-marketing .content-month {
+    font-size: 12px;
+    color: #666;
+    text-transform: uppercase;
+}
+
+.growth-marketing .content-details {
+    flex: 1;
+}
+
+.growth-marketing .content-details h4 {
+    margin: 0 0 5px;
+    color: #333;
+    font-size: 16px;
+}
+
+.growth-marketing .content-details p {
+    margin: 0;
+    color: #666;
+    font-size: 14px;
+}
+
+.growth-marketing .content-details p span {
+    font-weight: 500;
+    color: #555;
+}
+
+.growth-marketing .content-actions {
+    display: flex;
+    gap: 5px;
+}
+
+/* Asset Library */
+.growth-marketing .asset-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 20px;
+}
+
+.growth-marketing .asset-card {
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 20px;
+    text-align: center;
+    background: #fff;
+    transition: box-shadow 0.3s ease;
+}
+
+.growth-marketing .asset-card:hover {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.growth-marketing .asset-icon {
+    font-size: 24px;
+    color: #001f3f;
+    margin-bottom: 10px;
+}
+
+.growth-marketing .asset-card h4 {
+    margin: 0 0 5px;
+    color: #333;
+    font-size: 16px;
+}
+
+.growth-marketing .asset-card p {
+    margin: 0 0 15px;
+    color: #666;
+    font-size: 14px;
+}
+
+.growth-marketing .asset-actions {
+    display: flex;
+    justify-content: center;
+    gap: 5px;
+}
+
+/* Campaigns */
+.growth-marketing .performance-metrics {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.growth-marketing .performance-metrics span {
+    font-size: 12px;
+    color: #666;
+}
+
+.growth-marketing .empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: #666;
+}
+
+.growth-marketing .empty-state p {
+    margin-bottom: 20px;
+    font-size: 16px;
+}
+
+.growth-marketing .empty-state .btn-primary {
+    padding: 10px 20px;
+    background: #001f3f;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: background 0.3s ease;
+}
+
+.growth-marketing .empty-state .btn-primary:hover {
+    background: #001530;
+}
+/* Finance Section */
+.finance {
+    padding: 20px;
+}
+
+.finance .section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.finance .section-header h2 {
+    color: #333;
+    font-size: 24px;
+    font-weight: 600;
+}
+
+.finance .sub-tabs {
+    display: flex;
+    border-bottom: 1px solid #e0e0e0;
+    margin-bottom: 20px;
+}
+
+.finance .sub-tab {
+    display: flex;
+    align-items: center;
+    padding: 12px 20px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    color: #666;
+    transition: all 0.3s ease;
+    border-bottom: 3px solid transparent;
+}
+
+.finance .sub-tab:hover {
+    color: #333;
+    background: rgba(0, 31, 63, 0.05);
+}
+
+.finance .sub-tab.active {
+    color: #001f3f;
+    border-bottom-color: #001f3f;
+}
+
+.finance .sub-tab svg {
+    margin-right: 8px;
+    font-size: 16px;
+}
+
+.finance .sub-tab-content {
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    padding: 25px;
+}
+
+/* KPI Cards */
+.finance .kpi-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.finance .kpi-card {
+    background: #fff;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    display: flex;
+    align-items: center;
+}
+
+.finance .kpi-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 15px;
+    font-size: 20px;
+    color: white;
+}
+
+.finance .kpi-icon.revenue {
+    background: #28a745;
+}
+
+.finance .kpi-icon.ventures {
+    background: #17a2b8;
+}
+
+.finance .kpi-icon.arr {
+    background: #ffc107;
+    color: #333;
+}
+
+.finance .kpi-icon.expenses {
+    background: #dc3545;
+}
+
+.finance .kpi-icon.profit {
+    background: #28a745;
+}
+
+.finance .kpi-details h3 {
+    margin: 0;
+    font-size: 24px;
+    font-weight: 600;
+    color: #333;
+}
+
+.finance .kpi-details p {
+    margin: 0;
+    color: #666;
+    font-size: 14px;
+}
+
+/* Charts */
+.finance .revenue-chart,
+.finance .pnl-chart {
+    margin-top: 30px;
+}
+
+.finance .revenue-chart h3,
+.finance .pnl-chart h3 {
+    margin-bottom: 15px;
+    color: #333;
+    font-size: 18px;
+}
+
+.finance .chart-placeholder {
+    background: #f9f9f9;
+    border: 1px dashed #ddd;
+    border-radius: 8px;
+    padding: 40px;
+    text-align: center;
+    color: #666;
+}
+
+/* Invoices */
+.finance .data-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.finance .data-table th,
+.finance .data-table td {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.finance .data-table th {
+    background: #f9f9f9;
+    font-weight: 600;
+    color: #555;
+}
+
+.finance .data-table tr:hover {
+    background: #f9f9f9;
+}
+
+.finance .status-badge {
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 500;
+    text-transform: uppercase;
+}
+
+.finance .status-badge.draft {
+    background: #f0f0f0;
+    color: #666;
+}
+
+.finance .status-badge.sent {
+    background: #cce5ff;
+    color: #004085;
+}
+
+.finance .status-badge.paid {
+    background: #d4edda;
+    color: #155724;
+}
+
+.finance .status-badge.overdue {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.finance .table-actions {
+    display: flex;
+    gap: 5px;
+}
+
+.finance .table-actions .btn-icon {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 5px;
+    border-radius: 4px;
+    transition: background 0.3s ease;
+}
+
+.finance .table-actions .btn-icon:hover {
+    background: #f0f0f0;
+}
+
+.finance .empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: #666;
+}
+
+.finance .empty-state p {
+    margin-bottom: 20px;
+    font-size: 16px;
+}
+
+.finance .empty-state .btn-primary {
+    padding: 10px 20px;
+    background: #001f3f;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: background 0.3s ease;
+}
+
+.finance .empty-state .btn-primary:hover {
+    background: #001530;
+}
+/* Legal & Compliance Section */
+.legal-compliance {
+    padding: 20px;
+}
+
+.legal-compliance .section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.legal-compliance .section-header h2 {
+    color: #333;
+    font-size: 24px;
+    font-weight: 600;
+}
+
+.legal-compliance .sub-tabs {
+    display: flex;
+    border-bottom: 1px solid #e0e0e0;
+    margin-bottom: 20px;
+}
+
+.legal-compliance .sub-tab {
+    display: flex;
+    align-items: center;
+    padding: 12px 20px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    color: #666;
+    transition: all 0.3s ease;
+    border-bottom: 3px solid transparent;
+}
+
+.legal-compliance .sub-tab:hover {
+    color: #333;
+    background: rgba(0, 31, 63, 0.05);
+}
+
+.legal-compliance .sub-tab.active {
+    color: #001f3f;
+    border-bottom-color: #001f3f;
+}
+
+.legal-compliance .sub-tab svg {
+    margin-right: 8px;
+    font-size: 16px;
+}
+
+.legal-compliance .sub-tab-content {
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    padding: 25px;
+}
+
+/* Contracts */
+.legal-compliance .data-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.legal-compliance .data-table th,
+.legal-compliance .data-table td {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.legal-compliance .data-table th {
+    background: #f9f9f9;
+    font-weight: 600;
+    color: #555;
+}
+
+.legal-compliance .data-table tr:hover {
+    background: #f9f9f9;
+}
+
+.legal-compliance .status-badge {
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 500;
+    text-transform: uppercase;
+}
+
+.legal-compliance .status-badge.draft {
+    background: #f0f0f0;
+    color: #666;
+}
+
+.legal-compliance .status-badge.pending {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.legal-compliance .status-badge.signed {
+    background: #d4edda;
+    color: #155724;
+}
+
+.legal-compliance .status-badge.expired {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.legal-compliance .table-actions {
+    display: flex;
+    gap: 5px;
+}
+
+.legal-compliance .table-actions .btn-icon {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 5px;
+    border-radius: 4px;
+    transition: background 0.3s ease;
+}
+
+.legal-compliance .table-actions .btn-icon:hover {
+    background: #f0f0f0;
+}
+
+/* Compliance Calendar */
+.legal-compliance .calendar-view .calendar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.legal-compliance .calendar-view .calendar-nav {
+    display: flex;
+    gap: 10px;
+}
+
+.legal-compliance .calendar-view .calendar-nav .btn-icon {
+    background: #f0f0f0;
+    border: none;
+    border-radius: 4px;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background 0.3s ease;
+}
+
+.legal-compliance .calendar-view .calendar-nav .btn-icon:hover {
+    background: #e0e0e0;
+}
+
+.legal-compliance .compliance-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.legal-compliance .compliance-item {
+    display: flex;
+    align-items: center;
+    padding: 15px;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    background: #fff;
+    transition: box-shadow 0.3s ease;
+}
+
+.legal-compliance .compliance-item:hover {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.legal-compliance .compliance-date {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 60px;
+    height: 60px;
+    background: #f9f9f9;
+    border-radius: 8px;
+    margin-right: 15px;
+}
+
+.legal-compliance .compliance-day {
+    font-size: 18px;
+    font-weight: 600;
+    color: #333;
+}
+
+.legal-compliance .compliance-month {
+    font-size: 12px;
+    color: #666;
+    text-transform: uppercase;
+}
+
+.legal-compliance .compliance-details {
+    flex: 1;
+}
+
+.legal-compliance .compliance-details h4 {
+    margin: 0 0 5px;
+    color: #333;
+    font-size: 16px;
+}
+
+.legal-compliance .compliance-details p {
+    margin: 0;
+    color: #666;
+    font-size: 14px;
+}
+
+.legal-compliance .compliance-details p span {
+    font-weight: 500;
+    color: #555;
+}
+
+.legal-compliance .compliance-actions {
+    display: flex;
+    gap: 5px;
+}
+
+.legal-compliance .empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: #666;
+}
+
+.legal-compliance .empty-state p {
+    margin-bottom: 20px;
+    font-size: 16px;
+}
+
+.legal-compliance .empty-state .btn-primary {
+    padding: 10px 20px;
+    background: #001f3f;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: background 0.3s ease;
+}
+
+.legal-compliance .empty-state .btn-primary:hover {
+    background: #001530;
+}
+/* Documents & Assets Section */
+.documents {
+    padding: 20px;
+}
+
+.documents .section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.documents .section-header h2 {
+    color: #333;
+    font-size: 24px;
+    font-weight: 600;
+}
+
+.documents .header-actions {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.documents .search-bar {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.documents .search-bar svg {
+    position: absolute;
+    left: 12px;
+    color: #666;
+}
+
+.documents .search-bar input {
+    padding: 8px 12px 8px 40px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+    width: 250px;
+}
+
+.documents .document-categories {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+}
+
+.documents .document-category {
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    overflow: hidden;
+}
+
+.documents .document-category h3 {
+    margin: 0;
+    padding: 15px;
+    background: #f9f9f9;
+    border-bottom: 1px solid #e0e0e0;
+    color: #333;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.documents .document-list {
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.documents .document-item {
+    display: flex;
+    align-items: center;
+    padding: 10px;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    background: #fff;
+    transition: box-shadow 0.3s ease;
+}
+
+.documents .document-item:hover {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.documents .document-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 6px;
+    background: #f9f9f9;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 12px;
+    color: #001f3f;
+}
+
+.documents .document-info {
+    flex: 1;
+}
+
+.documents .document-info h4 {
+    margin: 0 0 3px;
+    color: #333;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.documents .document-info p {
+    margin: 0;
+    color: #666;
+    font-size: 12px;
+}
+
+.documents .document-info p span {
+    font-weight: 500;
+    color: #555;
+}
+
+.documents .document-actions {
+    display: flex;
+    gap: 5px;
+}
+
+.documents .document-actions .btn-icon {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 5px;
+    border-radius: 4px;
+    transition: background 0.3s ease;
+}
+
+.documents .document-actions .btn-icon:hover {
+    background: #f0f0f0;
+}
+
+.documents .empty-category {
+    text-align: center;
+    padding: 20px;
+    color: #666;
+}
+
+.documents .empty-category p {
+    margin-bottom: 10px;
+    font-size: 14px;
+}
+
+.documents .empty-category .btn-text {
+    background: none;
+    border: none;
+    color: #001f3f;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: color 0.3s ease;
+}
+
+.documents .empty-category .btn-text:hover {
+    color: #001530;
+    text-decoration: underline;
+}
+/* CRM & Outreach Section */
+.crm {
+    padding: 20px;
+}
+
+.crm .section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.crm .section-header h2 {
+    color: #333;
+    font-size: 24px;
+    font-weight: 600;
+}
+
+.crm .sub-tabs {
+    display: flex;
+    border-bottom: 1px solid #e0e0e0;
+    margin-bottom: 20px;
+}
+
+.crm .sub-tab {
+    display: flex;
+    align-items: center;
+    padding: 12px 20px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    color: #666;
+    transition: all 0.3s ease;
+    border-bottom: 3px solid transparent;
+}
+
+.crm .sub-tab:hover {
+    color: #333;
+    background: rgba(0, 31, 63, 0.05);
+}
+
+.crm .sub-tab.active {
+    color: #001f3f;
+    border-bottom-color: #001f3f;
+}
+
+.crm .sub-tab svg {
+    margin-right: 8px;
+    font-size: 16px;
+}
+
+.crm .sub-tab-content {
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    padding: 25px;
+}
+
+.crm .data-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.crm .data-table th,
+.crm .data-table td {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.crm .data-table th {
+    background: #f9f9f9;
+    font-weight: 600;
+    color: #555;
+}
+
+.crm .data-table tr:hover {
+    background: #f9f9f9;
+}
+
+.crm .status-badge {
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 500;
+    text-transform: uppercase;
+}
+
+.crm .status-badge.prospect {
+    background: #f0f0f0;
+    color: #666;
+}
+
+.crm .status-badge.engaged {
+    background: #cce5ff;
+    color: #004085;
+}
+
+.crm .status-badge.committed {
+    background: #d4edda;
+    color: #155724;
+}
+
+.crm .status-badge.high {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.crm .status-badge.medium {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.crm .status-badge.low {
+    background: #d4edda;
+    color: #155724;
+}
+
+.crm .table-actions {
+    display: flex;
+    gap: 5px;
+}
+
+.crm .table-actions .btn-icon {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 5px;
+    border-radius: 4px;
+    transition: background 0.3s ease;
+}
+
+.crm .table-actions .btn-icon:hover {
+    background: #f0f0f0;
+}
+
+.crm .performance-metrics {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.crm .performance-metrics span {
+    font-size: 12px;
+    color: #666;
+}
+
+.crm .empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: #666;
+}
+
+.crm .empty-state p {
+    margin-bottom: 20px;
+    font-size: 16px;
+}
+
+.crm .empty-state .btn-primary {
+    padding: 10px 20px;
+    background: #001f3f;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: background 0.3s ease;
+}
+
+.crm .empty-state .btn-primary:hover {
+    background: #001530;
+}
+/* Support & Tickets Section */
+.support {
+    padding: 20px;
+}
+
+.support .section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.support .section-header h2 {
+    color: #333;
+    font-size: 24px;
+    font-weight: 600;
+}
+
+.support .tickets-container {
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    overflow: hidden;
+}
+
+.support .tickets-filters {
+    padding: 20px;
+    background: #f9f9f9;
+    border-bottom: 1px solid #e0e0e0;
+    display: flex;
+    gap: 20px;
+}
+
+.support .filter-group {
+    display: flex;
+    align-items: center;
+}
+
+.support .filter-group label {
+    margin-right: 8px;
+    font-weight: 500;
+    color: #555;
+}
+
+.support .filter-group select {
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+    background: white;
+}
+
+.support .tickets-list {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.support .ticket-card {
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 20px;
+    background: #fff;
+    transition: box-shadow 0.3s ease;
+}
+
+.support .ticket-card:hover {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.support .ticket-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 15px;
+}
+
+.support .ticket-header h3 {
+    margin: 0;
+    color: #333;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.support .ticket-meta {
+    display: flex;
+    gap: 10px;
+}
+
+.support .priority-badge {
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 500;
+    text-transform: uppercase;
+}
+
+.support .priority-badge.critical {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.support .priority-badge.high {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.support .priority-badge.medium {
+    background: #cce5ff;
+    color: #004085;
+}
+
+.support .priority-badge.low {
+    background: #d4edda;
+    color: #155724;
+}
+
+.support .status-badge {
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 500;
+    text-transform: uppercase;
+}
+
+.support .status-badge.open {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.support .status-badge.in-progress {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.support .status-badge.resolved {
+    background: #d4edda;
+    color: #155724;
+}
+
+.support .ticket-details {
+    margin-bottom: 15px;
+}
+
+.support .ticket-details p {
+    margin: 0 0 5px;
+    color: #666;
+    font-size: 14px;
+}
+
+.support .ticket-details p span {
+    font-weight: 500;
+    color: #555;
+}
+
+.support .ticket-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 5px;
+}
+
+.support .ticket-actions .btn-icon {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 5px;
+    border-radius: 4px;
+    transition: background 0.3s ease;
+}
+
+.support .ticket-actions .btn-icon:hover {
+    background: #f0f0f0;
+}
+
+.support .empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: #666;
+}
+
+.support .empty-state p {
+    margin-bottom: 20px;
+    font-size: 16px;
+}
+
+.support .empty-state .btn-primary {
+    padding: 10px 20px;
+    background: #001f3f;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: background 0.3s ease;
+}
+
+.support .empty-state .btn-primary:hover {
+    background: #001530;
+}
+/* Reports & Analytics Section */
+.reports {
+    padding: 20px;
+}
+
+.reports .section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.reports .section-header h2 {
+    color: #333;
+    font-size: 24px;
+    font-weight: 600;
+}
+
+.reports .header-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.reports .reports-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+}
+
+.reports .report-card {
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    overflow: hidden;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.reports .report-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.reports .report-header {
+    padding: 15px 20px;
+    background: #f9f9f9;
+    border-bottom: 1px solid #e0e0e0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.reports .report-header h3 {
+    margin: 0;
+    color: #333;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.reports .report-header .btn-icon {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 5px;
+    border-radius: 4px;
+    transition: background 0.3s ease;
+}
+
+.reports .report-header .btn-icon:hover {
+    background: #e0e0e0;
+}
+
+.reports .report-content {
+    padding: 20px;
+    min-height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.reports .chart-placeholder {
+    background: #f9f9f9;
+    border: 1px dashed #ddd;
+    border-radius: 8px;
+    padding: 40px;
+    text-align: center;
+    color: #666;
+    width: 100%;
+}
+
+.reports .report-footer {
+    padding: 15px 20px;
+    background: #f9f9f9;
+    border-top: 1px solid #e0e0e0;
+    text-align: center;
+}
+
+.reports .report-footer .btn-secondary {
+    background: #f0f0f0;
+    border: none;
+    border-radius: 4px;
+    padding: 8px 16px;
+    color: #333;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.3s ease;
+}
+
+.reports .report-footer .btn-secondary:hover {
+    background: #e0e0e0;
+}
+/* Automations Section */
+.automations {
+    padding: 20px;
+}
+
+.automations .section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.automations .section-header h2 {
+    color: #333;
+    font-size: 24px;
+    font-weight: 600;
+}
+
+.automations .automations-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+}
+
+.automations .automation-card {
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    padding: 20px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.automations .automation-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.automations .automation-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 15px;
+}
+
+.automations .automation-header h3 {
+    margin: 0;
+    color: #333;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.automations .automation-status {
+    display: flex;
+    align-items: center;
+}
+
+.automations .status-badge {
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 500;
+    text-transform: uppercase;
+}
+
+.automations .status-badge.active {
+    background: #d4edda;
+    color: #155724;
+}
+
+.automations .status-badge.inactive {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.automations .automation-details {
+    margin-bottom: 15px;
+}
+
+.automations .automation-details p {
+    margin: 0 0 5px;
+    color: #666;
+    font-size: 14px;
+}
+
+.automations .automation-details p span {
+    font-weight: 500;
+    color: #555;
+}
+
+.automations .automation-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 5px;
+}
+
+.automations .automation-actions .btn-icon {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 5px;
+    border-radius: 4px;
+    transition: background 0.3s ease;
+}
+
+.automations .automation-actions .btn-icon:hover {
+    background: #f0f0f0;
+}
+
+.automations .empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: #666;
+}
+
+.automations .empty-state p {
+    margin-bottom: 20px;
+    font-size: 16px;
+}
+
+.automations .empty-state .btn-primary {
+    padding: 10px 20px;
+    background: #001f3f;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: background 0.3s ease;
+}
+
+.automations .empty-state .btn-primary:hover {
+    background: #001530;
+}
+/* Users & Teams Section */
+.users {
+    padding: 20px;
+}
+
+.users .section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.users .section-header h2 {
+    color: #333;
+    font-size: 24px;
+    font-weight: 600;
+}
+
+.users .users-grid {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 20px;
+}
+
+/* Teams Section */
+.users .teams-section {
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    padding: 20px;
+}
+
+.users .teams-section h3 {
+    margin: 0 0 15px;
+    color: #333;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.users .teams-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.users .team-card {
+    background: #f9f9f9;
+    border-radius: 8px;
+    padding: 15px;
+    transition: box-shadow 0.3s ease;
+}
+
+.users .team-card:hover {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.users .team-card h4 {
+    margin: 0 0 5px;
+    color: #333;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.users .team-card p {
+    margin: 0 0 10px;
+    color: #666;
+    font-size: 14px;
+}
+
+.users .team-card .btn-secondary {
+    background: #f0f0f0;
+    border: none;
+    border-radius: 4px;
+    padding: 8px 16px;
+    color: #333;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.3s ease;
+    width: 100%;
+}
+
+.users .team-card .btn-secondary:hover {
+    background: #e0e0e0;
+}
+
+/* Users Section */
+.users .users-section {
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    padding: 20px;
+}
+
+.users .users-section h3 {
+    margin: 0 0 15px;
+    color: #333;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.users .users-table {
+    overflow-x: auto;
+}
+
+.users .data-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.users .data-table th,
+.users .data-table td {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.users .data-table th {
+    background: #f9f9f9;
+    font-weight: 600;
+    color: #555;
+}
+
+.users .data-table tr:hover {
+    background: #f9f9f9;
+}
+
+.users .user-name {
+    display: flex;
+    align-items: center;
+}
+
+.users .user-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: #001f3f;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    margin-right: 10px;
+}
+
+.users .role-badge {
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 500;
+    text-transform: uppercase;
+}
+
+.users .role-badge.admin {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.users .role-badge.manager {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.users .role-badge.user {
+    background: #d4edda;
+    color: #155724;
+}
+
+.users .performance-metrics {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.users .performance-metrics span {
+    font-size: 12px;
+    color: #666;
+}
+
+.users .table-actions {
+    display: flex;
+    gap: 5px;
+}
+
+.users .table-actions .btn-icon {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 5px;
+    border-radius: 4px;
+    transition: background 0.3s ease;
+}
+
+.users .table-actions .btn-icon:hover {
+    background: #f0f0f0;
+}
+
+.users .empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: #666;
+}
+
+.users .empty-state p {
+    margin-bottom: 20px;
+    font-size: 16px;
+}
+
+.users .empty-state .btn-primary {
+    padding: 10px 20px;
+    background: #001f3f;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: background 0.3s ease;
+}
+
+.users .empty-state .btn-primary:hover {
+    background: #001530;
+}
+
+/* Responsive Styles */
+@media (max-width: 768px) {
+    .users .users-grid {
+        grid-template-columns: 1fr;
+    }
+}
