@@ -27,6 +27,40 @@ const AdminSchema = new mongoose.Schema({
 
 const Admin = mongoose.model("Admin", AdminSchema);
 
+// Define UserData schema for storing user-specific data
+const UserDataSchema = new mongoose.Schema({
+    userId: { type: String, required: true, unique: true },
+    kpiData: Object,
+    approvals: Array,
+    ventures: Array,
+    founders: Array,
+    tasks: Array,
+    termSheets: Array,
+    capTable: Array,
+    equityLedger: Array,
+    vestingSchedules: Array,
+    contentCalendar: Array,
+    assetLibrary: Array,
+    campaigns: Array,
+    invoices: Array,
+    revenueShare: Object,
+    profitLoss: Object,
+    contracts: Array,
+    complianceCalendar: Array,
+    documents: Array,
+    investors: Array,
+    tickets: Array,
+    reports: Array,
+    automations: Array,
+    teams: Array,
+    settings: Object,
+    notifications: Array,
+    events: Array,
+    activeSubTab: Object
+});
+
+const UserData = mongoose.model("UserData", UserDataSchema);
+
 // Function to create test admin users
 async function createTestAdmins() {
     try {
@@ -119,6 +153,89 @@ app.post("/login", async (req, res) => {
     } catch (err) {
         console.error(err);
         return res.status(500).json({ success: false, message: "Server error" });
+    }
+});
+
+// Get user data
+app.get("/api/user-data/:userId", async (req, res) => {
+    try {
+        const userId = req.params.userId;
+        let userData = await UserData.findOne({ userId });
+
+        if (!userData) {
+            // Create default user data if not exists
+            userData = new UserData({
+                userId,
+                kpiData: {
+                    activeVentures: 0,
+                    portfolioARR: "$0",
+                    revenueShare: "$0",
+                    tasksDue: 0,
+                    invoicesPending: 0
+                },
+                approvals: [],
+                ventures: [],
+                founders: [],
+                tasks: [],
+                termSheets: [],
+                capTable: [],
+                equityLedger: [],
+                vestingSchedules: [],
+                contentCalendar: [],
+                assetLibrary: [],
+                campaigns: [],
+                invoices: [],
+                revenueShare: {},
+                profitLoss: {},
+                contracts: [],
+                complianceCalendar: [],
+                documents: [],
+                investors: [],
+                tickets: [],
+                reports: [],
+                automations: [],
+                teams: [],
+                settings: {},
+                notifications: [],
+                events: [],
+                activeSubTab: {
+                    deals: "termSheets",
+                    growth: "contentCalendar",
+                    finance: "invoices",
+                    legal: "contracts",
+                    crm: "investors",
+                    settings: "branding"
+                }
+            });
+            await userData.save();
+        }
+
+        res.json(userData);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: "Server error" });
+    }
+});
+
+// Update user data
+app.post("/api/user-data/:userId", async (req, res) => {
+    try {
+        const userId = req.params.userId;
+        const data = req.body;
+
+        let userData = await UserData.findOne({ userId });
+        if (!userData) {
+            userData = new UserData({ userId, ...data });
+        } else {
+            // Update existing data
+            Object.assign(userData, data);
+        }
+
+        await userData.save();
+        res.json({ success: true });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: "Server error" });
     }
 });
 

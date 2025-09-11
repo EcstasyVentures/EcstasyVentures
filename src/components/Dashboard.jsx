@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import {
     FiHome, FiPieChart, FiUsers, FiDollarSign, FiCheckSquare, FiTrendingUp, FiCreditCard,
@@ -23,6 +23,8 @@ export default function Dashboard() {
     const [showAddModal, setShowAddModal] = useState(false);
     const [newItem, setNewItem] = useState({});
     const [editingItem, setEditingItem] = useState(null);
+    const [showKPIModal, setShowKPIModal] = useState(false);
+
     // New state variables for all sections
     const [termSheets, setTermSheets] = useState([]);
     const [capTable, setCapTable] = useState([]);
@@ -42,72 +44,197 @@ export default function Dashboard() {
     const [reports, setReports] = useState([]);
     const [automations, setAutomations] = useState([]);
     const [teams, setTeams] = useState([]);
-    const [settings, setSettings] = useState({});
+    const [settings, setSettings] = useState({
+        companyName: 'Ecstasy Ventures',
+        primaryColor: '#001f3f',
+        secondaryColor: '#ff851b',
+        integrations: []
+    });
     const [events, setEvents] = useState([]);
-    const [activeSubTab, setActiveSubTab] = useState({});
+    const [activeSubTab, setActiveSubTab] = useState({
+        deals: "termSheets",
+        growth: "contentCalendar",
+        finance: "invoices",
+        legal: "contracts",
+        crm: "investors",
+        settings: "branding"
+    });
 
-    // Check if user is logged in
+    // Counter for unique IDs
+    const [idCounter, setIdCounter] = useState(1);
+
+    // Ref to hold current state for saving
+    const stateRef = useRef();
+    stateRef.current = {
+        kpiData,
+        approvals,
+        ventures,
+        founders,
+        tasks,
+        termSheets,
+        capTable,
+        equityLedger,
+        vestingSchedules,
+        contentCalendar,
+        assetLibrary,
+        campaigns,
+        invoices,
+        revenueShare,
+        profitLoss,
+        contracts,
+        complianceCalendar,
+        documents,
+        investors,
+        tickets,
+        reports,
+        automations,
+        teams,
+        settings,
+        notifications,
+        events,
+        activeSubTab
+    };
+
+    // Function to generate unique ID
+    const generateUniqueId = () => {
+        const newId = idCounter;
+        setIdCounter(prev => prev + 1);
+        return newId;
+    };
+
+    // Function to save user data to backend
+    const saveUserData = useCallback(async () => {
+        const username = localStorage.getItem("username");
+        if (!username) return;
+
+        try {
+            const response = await fetch(`http://localhost:5000/api/user-data/${username}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(stateRef.current),
+            });
+            const result = await response.json();
+            if (!result.success) {
+                console.error('Failed to save user data');
+            }
+        } catch (error) {
+            console.error('Error saving user data:', error);
+        }
+    }, []);
+
+    // Debounced save
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            saveUserData();
+        }, 1000); // Save after 1 second of inactivity
+
+        return () => clearTimeout(timer);
+    }, [kpiData, approvals, ventures, founders, tasks, termSheets, capTable, equityLedger,
+        vestingSchedules, contentCalendar, assetLibrary, campaigns, invoices, revenueShare, profitLoss,
+        contracts, complianceCalendar, documents, investors, tickets, reports, automations, teams,
+        settings, notifications, events, activeSubTab, saveUserData]);
+
+    // Function to fetch user data from backend
+    const fetchUserData = async () => {
+        const username = localStorage.getItem("username");
+        if (!username) return;
+
+        try {
+            const response = await fetch(`http://localhost:5000/api/user-data/${username}`);
+            const userData = await response.json();
+
+            // Set all state variables from userData
+            setKpiData(userData.kpiData || {});
+            setApprovals(userData.approvals || []);
+            setVentures(userData.ventures || []);
+            setFounders(userData.founders || []);
+            setTasks(userData.tasks || []);
+            setTermSheets(userData.termSheets || []);
+            setCapTable(userData.capTable || []);
+            setEquityLedger(userData.equityLedger || []);
+            setVestingSchedules(userData.vestingSchedules || []);
+            setContentCalendar(userData.contentCalendar || []);
+            setAssetLibrary(userData.assetLibrary || []);
+            setCampaigns(userData.campaigns || []);
+            setInvoices(userData.invoices || []);
+            setRevenueShare(userData.revenueShare || {});
+            setProfitLoss(userData.profitLoss || {});
+            setContracts(userData.contracts || []);
+            setComplianceCalendar(userData.complianceCalendar || []);
+            setDocuments(userData.documents || []);
+            setInvestors(userData.investors || []);
+            setTickets(userData.tickets || []);
+            setReports(userData.reports || []);
+            setAutomations(userData.automations || []);
+            setTeams(userData.teams || []);
+            setSettings(userData.settings || {
+                companyName: 'Ecstasy Ventures',
+                primaryColor: '#001f3f',
+                secondaryColor: '#ff851b',
+                integrations: []
+            });
+            setNotifications(userData.notifications || []);
+            setEvents(userData.events || []);
+            setActiveSubTab(userData.activeSubTab || {
+                deals: "termSheets",
+                growth: "contentCalendar",
+                finance: "invoices",
+                legal: "contracts",
+                crm: "investors",
+                settings: "branding"
+            });
+
+            // Find the highest ID to set the counter
+            const allItems = [
+                ...userData.kpiData || [],
+                ...userData.approvals || [],
+                ...userData.ventures || [],
+                ...userData.founders || [],
+                ...userData.tasks || [],
+                ...userData.termSheets || [],
+                ...userData.capTable || [],
+                ...userData.equityLedger || [],
+                ...userData.vestingSchedules || [],
+                ...userData.contentCalendar || [],
+                ...userData.assetLibrary || [],
+                ...userData.campaigns || [],
+                ...userData.invoices || [],
+                ...userData.contracts || [],
+                ...userData.complianceCalendar || [],
+                ...userData.documents || [],
+                ...userData.investors || [],
+                ...userData.tickets || [],
+                ...userData.automations || [],
+                ...userData.teams || [],
+                ...(userData.settings?.integrations || []),
+                ...userData.notifications || [],
+                ...userData.events || []
+            ];
+
+            const maxId = allItems.reduce((max, item) => {
+                const itemId = parseInt(item.id);
+                return itemId > max ? itemId : max;
+            }, 0);
+
+            setIdCounter(maxId + 1);
+        } catch (error) {
+            console.error('Error fetching user data:', error);
+        }
+    };
+
+    // Check if user is logged in and fetch data
     useEffect(() => {
         const username = localStorage.getItem("username");
         const role = localStorage.getItem("role");
-
-        // Check if user exists and has a valid role (not checking for specific "admin" role)
         if (!username || !role) {
             navigate("/");
             return;
         }
-
         setUser({ username, role });
-        // Initialize with empty data
-        initializeEmptyData();
+        fetchUserData();
     }, [navigate]);
-
-    const initializeEmptyData = () => {
-        // KPI data
-        setKpiData({
-            activeVentures: 0,
-            portfolioARR: "$0",
-            revenueShare: "$0",
-            tasksDue: 0,
-            invoicesPending: 0
-        });
-        // Empty arrays for all sections
-        setApprovals([]);
-        setVentures([]);
-        setFounders([]);
-        setTasks([]);
-        setTermSheets([]);
-        setCapTable([]);
-        setEquityLedger([]);
-        setVestingSchedules([]);
-        setContentCalendar([]);
-        setAssetLibrary([]);
-        setCampaigns([]);
-        setInvoices([]);
-        setRevenueShare({});
-        setProfitLoss({});
-        setContracts([]);
-        setComplianceCalendar([]);
-        setDocuments([]);
-        setInvestors([]);
-        setTickets([]);
-        setReports([]);
-        setAutomations([]);
-        setTeams([]);
-        setSettings({});
-        setNotifications([]);
-        setEvents([]);
-
-        // Initialize active subtabs
-        setActiveSubTab({
-            deals: "termSheets",
-            growth: "contentCalendar",
-            finance: "invoices",
-            legal: "contracts",
-            crm: "investors",
-            settings: "branding"
-        });
-    };
 
     const handleLogout = () => {
         localStorage.removeItem("username");
@@ -188,13 +315,15 @@ export default function Dashboard() {
                     setTeams(teams.filter((_, index) => index !== id));
                     break;
                 case 'setting':
-                    // Handle settings deletion based on type
                     if (settings.integrations) {
                         setSettings({
                             ...settings,
                             integrations: settings.integrations.filter((_, index) => index !== id)
                         });
                     }
+                    break;
+                case 'approval':
+                    setApprovals(approvals.filter(approval => approval.id !== id));
                     break;
                 default:
                     alert(`Deleted ${type} with ID: ${id}`);
@@ -203,24 +332,59 @@ export default function Dashboard() {
     };
 
     const handleApprove = (id) => {
-        // In a real app, this would call an API
-        alert(`Approved item with ID: ${id}`);
+        const approval = approvals.find(item => item.id === id);
+        if (approval) {
+            // Create notification for the requester
+            const newNotification = {
+                id: generateUniqueId(),
+                category: 'Approval',
+                message: `Your approval request for "${approval.title}" has been approved by ${user.username}`,
+                time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                read: false
+            };
+            setNotifications([...notifications, newNotification]);
+
+            // Remove from approvals
+            setApprovals(approvals.filter(item => item.id !== id));
+            alert(`Approved item with ID: ${id}`);
+        }
     };
 
     const handleReject = (id) => {
-        // In a real app, this would call an API
-        alert(`Rejected item with ID: ${id}`);
+        const approval = approvals.find(item => item.id === id);
+        if (approval) {
+            // Create notification for the requester
+            const newNotification = {
+                id: generateUniqueId(),
+                category: 'Approval',
+                message: `Your approval request for "${approval.title}" has been rejected by ${user.username}`,
+                time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                read: false
+            };
+            setNotifications([...notifications, newNotification]);
+
+            // Remove from approvals
+            setApprovals(approvals.filter(item => item.id !== id));
+            alert(`Rejected item with ID: ${id}`);
+        }
+    };
+
+    const markAsRead = (id) => {
+        setNotifications(notifications.map(notif =>
+            notif.id === id ? { ...notif, read: true } : notif
+        ));
     };
 
     const handleFormSubmit = (e) => {
         e.preventDefault();
         const formData = new FormData(e.target);
         const data = Object.fromEntries(formData.entries());
+
         // Handle different form types
         switch (newItem.type) {
             case 'event':
                 const newEvent = {
-                    id: editingItem ? editingItem.id : Date.now(),
+                    id: editingItem ? editingItem.id : generateUniqueId(),
                     title: data.title,
                     date: data.date,
                     time: data.time,
@@ -235,7 +399,7 @@ export default function Dashboard() {
                 break;
             case 'task':
                 const newTask = {
-                    id: editingItem ? editingItem.id : Date.now(),
+                    id: editingItem ? editingItem.id : generateUniqueId(),
                     title: data.title,
                     description: data.description,
                     assignee: data.assignee,
@@ -246,11 +410,23 @@ export default function Dashboard() {
                     setTasks(tasks.map(task => task.id === editingItem.id ? newTask : task));
                 } else {
                     setTasks([...tasks, newTask]);
+
+                    // If task is assigned to someone else, create notification
+                    if (data.assignee !== user.username) {
+                        const newNotification = {
+                            id: generateUniqueId(),
+                            category: 'Task',
+                            message: `You have been assigned a new task: ${data.title} by ${user.username}`,
+                            time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                            read: false
+                        };
+                        setNotifications([...notifications, newNotification]);
+                    }
                 }
                 break;
             case 'venture':
                 const newVenture = {
-                    id: editingItem ? editingItem.id : Date.now(),
+                    id: editingItem ? editingItem.id : generateUniqueId(),
                     name: data.name,
                     industry: data.industry,
                     stage: data.stage,
@@ -265,7 +441,7 @@ export default function Dashboard() {
                 break;
             case 'founder':
                 const newFounder = {
-                    id: editingItem ? editingItem.id : Date.now(),
+                    id: editingItem ? editingItem.id : generateUniqueId(),
                     name: data.name,
                     company: data.company,
                     email: data.email,
@@ -281,7 +457,7 @@ export default function Dashboard() {
                 break;
             case 'termSheet':
                 const newTermSheet = {
-                    id: editingItem ? editingItem.id : Date.now(),
+                    id: editingItem ? editingItem.id : generateUniqueId(),
                     title: data.title,
                     company: data.company,
                     amount: data.amount,
@@ -295,7 +471,7 @@ export default function Dashboard() {
                 break;
             case 'content':
                 const newContent = {
-                    id: editingItem ? editingItem.id : Date.now(),
+                    id: editingItem ? editingItem.id : generateUniqueId(),
                     title: data.title,
                     platform: data.platform,
                     publishDate: data.publishDate,
@@ -311,7 +487,7 @@ export default function Dashboard() {
                 break;
             case 'invoice':
                 const newInvoice = {
-                    id: editingItem ? editingItem.id : Date.now(),
+                    id: editingItem ? editingItem.id : generateUniqueId(),
                     number: data.number,
                     client: data.client,
                     amount: data.amount,
@@ -326,7 +502,7 @@ export default function Dashboard() {
                 break;
             case 'contract':
                 const newContract = {
-                    id: editingItem ? editingItem.id : Date.now(),
+                    id: editingItem ? editingItem.id : generateUniqueId(),
                     title: data.title,
                     party: data.party,
                     type: data.type,
@@ -342,7 +518,7 @@ export default function Dashboard() {
                 break;
             case 'document':
                 const newDocument = {
-                    id: editingItem ? editingItem.id : Date.now(),
+                    id: editingItem ? editingItem.id : generateUniqueId(),
                     name: data.name,
                     category: data.category,
                     accessLevel: data.accessLevel,
@@ -356,7 +532,7 @@ export default function Dashboard() {
                 break;
             case 'investor':
                 const newInvestor = {
-                    id: editingItem ? editingItem.id : Date.now(),
+                    id: editingItem ? editingItem.id : generateUniqueId(),
                     name: data.name,
                     email: data.email,
                     phone: data.phone,
@@ -373,7 +549,7 @@ export default function Dashboard() {
                 break;
             case 'ticket':
                 const newTicket = {
-                    id: editingItem ? editingItem.id : Date.now(),
+                    id: editingItem ? editingItem.id : generateUniqueId(),
                     title: data.title,
                     description: data.description,
                     from: data.from,
@@ -389,7 +565,7 @@ export default function Dashboard() {
                 break;
             case 'automation':
                 const newAutomation = {
-                    id: editingItem ? editingItem.id : Date.now(),
+                    id: editingItem ? editingItem.id : generateUniqueId(),
                     name: data.name,
                     trigger: data.trigger,
                     action: data.action,
@@ -404,7 +580,7 @@ export default function Dashboard() {
                 break;
             case 'user':
                 const newUser = {
-                    id: editingItem ? editingItem.id : Date.now(),
+                    id: editingItem ? editingItem.id : generateUniqueId(),
                     name: data.name,
                     email: data.email,
                     role: data.role,
@@ -430,7 +606,7 @@ export default function Dashboard() {
                     });
                 } else if (newItem.typeData?.type === 'integration') {
                     const newIntegration = {
-                        id: editingItem ? editingItem.id : Date.now(),
+                        id: editingItem ? editingItem.id : generateUniqueId(),
                         name: data.name,
                         description: data.description || 'Integration',
                         apiKey: data.apiKey,
@@ -450,14 +626,54 @@ export default function Dashboard() {
                     }
                 }
                 break;
+            case 'approval':
+                const newApproval = {
+                    id: editingItem ? editingItem.id : generateUniqueId(),
+                    type: data.type,
+                    title: data.title,
+                    description: data.description,
+                    dueDate: data.dueDate,
+                    status: 'Pending',
+                    requestedBy: user.username
+                };
+                if (editingItem) {
+                    setApprovals(approvals.map(approval => approval.id === editingItem.id ? newApproval : approval));
+                } else {
+                    setApprovals([...approvals, newApproval]);
+
+                    // Create notification for all admins
+                    const adminUsers = ['superadmin', 'operations', 'venture', 'finance', 'legal', 'marketing', 'techlead'];
+                    adminUsers.forEach(admin => {
+                        if (admin !== user.username) {
+                            const newNotification = {
+                                id: generateUniqueId(),
+                                category: 'Approval',
+                                message: `New approval request: ${data.title} by ${user.username}`,
+                                time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                                read: false
+                            };
+                            setNotifications(prev => [...prev, newNotification]);
+                        }
+                    });
+                }
+                break;
+            case 'kpi':
+                setKpiData({
+                    activeVentures: data.activeVentures,
+                    portfolioARR: data.portfolioARR,
+                    revenueShare: data.revenueShare,
+                    tasksDue: data.tasksDue,
+                    invoicesPending: data.invoicesPending
+                });
+                setShowKPIModal(false);
+                break;
             default:
                 // Generic handler for other types
                 const genericItem = {
-                    id: editingItem ? editingItem.id : Date.now(),
+                    id: editingItem ? editingItem.id : generateUniqueId(),
                     ...data
                 };
                 if (editingItem) {
-                    // This would need to be implemented for each specific type
                     console.log('Updated item:', genericItem);
                 } else {
                     console.log('Added item:', genericItem);
@@ -471,7 +687,12 @@ export default function Dashboard() {
     const renderDashboardHome = () => (
         <div className="dashboard-home">
             <div className="dashboard-section">
-                <h2>KPI Overview</h2>
+                <div className="section-header">
+                    <h2>KPI Overview</h2>
+                    <button className="btn-icon" onClick={() => setShowKPIModal(true)}>
+                        <FiEdit />
+                    </button>
+                </div>
                 <div className="kpi-cards">
                     <div className="kpi-card">
                         <div className="kpi-icon ventures">
@@ -542,7 +763,8 @@ export default function Dashboard() {
                                     <div className="approval-info">
                                         <span className={`approval-type ${item.type.toLowerCase()}`}>{item.type}</span>
                                         <h3>{item.title}</h3>
-                                        <p>Due: {item.date}</p>
+                                        <p>Due: {item.dueDate}</p>
+                                        <p>Requested by: {item.requestedBy}</p>
                                     </div>
                                     <div className="approval-actions">
                                         <button className="btn-approve" onClick={() => handleApprove(item.id)}>
@@ -550,6 +772,9 @@ export default function Dashboard() {
                                         </button>
                                         <button className="btn-reject" onClick={() => handleReject(item.id)}>
                                             <FiX /> Reject
+                                        </button>
+                                        <button className="btn-icon" onClick={() => handleDeleteItem(item.id, 'approval')}>
+                                            <FiTrash2 />
                                         </button>
                                     </div>
                                 </div>
@@ -571,10 +796,15 @@ export default function Dashboard() {
                             </div>
                         ) : (
                             notifications.map(notif => (
-                                <div key={notif.id} className="notification-item">
+                                <div key={notif.id} className={`notification-item ${notif.read ? 'read' : 'unread'}`}>
                                     <span className={`notif-category ${notif.category.toLowerCase()}`}>{notif.category}</span>
                                     <p>{notif.message}</p>
                                     <span className="notif-time">{notif.time}</span>
+                                    {!notif.read && (
+                                        <button className="btn-text" onClick={() => markAsRead(notif.id)}>
+                                            Mark as Read
+                                        </button>
+                                    )}
                                 </div>
                             ))
                         )}
@@ -847,9 +1077,7 @@ export default function Dashboard() {
             { id: "equityLedger", label: "Equity Ledger", icon: <FiDatabase /> },
             { id: "vestingSchedules", label: "Vesting Schedules", icon: <FiCalendar /> }
         ];
-
         const activeSubTabId = activeSubTab.deals || "termSheets";
-
         return (
             <div className="deals-equity">
                 <div className="section-header">
@@ -860,7 +1088,6 @@ export default function Dashboard() {
                         </button>
                     </div>
                 </div>
-
                 <div className="sub-tabs">
                     {subTabs.map(tab => (
                         <button
@@ -873,7 +1100,6 @@ export default function Dashboard() {
                         </button>
                     ))}
                 </div>
-
                 <div className="sub-tab-content">
                     {activeSubTabId === "termSheets" && (
                         <div className="term-sheets">
@@ -924,7 +1150,6 @@ export default function Dashboard() {
                             )}
                         </div>
                     )}
-
                     {activeSubTabId === "capTable" && (
                         <div className="cap-table">
                             {capTable.length === 0 ? (
@@ -948,7 +1173,7 @@ export default function Dashboard() {
                                         </thead>
                                         <tbody>
                                         {capTable.map((entry, index) => (
-                                            <tr key={index}>
+                                            <tr key={`${entry.shareholder}-${index}`}>
                                                 <td>{entry.shareholder}</td>
                                                 <td>{entry.shares}</td>
                                                 <td>{entry.percentage}%</td>
@@ -971,7 +1196,6 @@ export default function Dashboard() {
                             )}
                         </div>
                     )}
-
                     {activeSubTabId === "equityLedger" && (
                         <div className="equity-ledger">
                             {equityLedger.length === 0 ? (
@@ -995,7 +1219,7 @@ export default function Dashboard() {
                                         </thead>
                                         <tbody>
                                         {equityLedger.map((entry, index) => (
-                                            <tr key={index}>
+                                            <tr key={`${entry.date}-${index}`}>
                                                 <td>{entry.date}</td>
                                                 <td>{entry.transaction}</td>
                                                 <td>{entry.shares}</td>
@@ -1018,7 +1242,6 @@ export default function Dashboard() {
                             )}
                         </div>
                     )}
-
                     {activeSubTabId === "vestingSchedules" && (
                         <div className="vesting-schedules">
                             {vestingSchedules.length === 0 ? (
@@ -1042,7 +1265,7 @@ export default function Dashboard() {
                                         </thead>
                                         <tbody>
                                         {vestingSchedules.map((schedule, index) => (
-                                            <tr key={index}>
+                                            <tr key={`${schedule.employee}-${index}`}>
                                                 <td>{schedule.employee}</td>
                                                 <td>{schedule.grantDate}</td>
                                                 <td>{schedule.totalShares}</td>
@@ -1077,9 +1300,7 @@ export default function Dashboard() {
             { id: "assetLibrary", label: "Asset Library", icon: <FiFolder /> },
             { id: "campaigns", label: "Campaigns", icon: <FiTrendingUp /> }
         ];
-
         const activeSubTabId = activeSubTab.growth || "contentCalendar";
-
         return (
             <div className="growth-marketing">
                 <div className="section-header">
@@ -1090,7 +1311,6 @@ export default function Dashboard() {
                         </button>
                     </div>
                 </div>
-
                 <div className="sub-tabs">
                     {subTabs.map(tab => (
                         <button
@@ -1103,7 +1323,6 @@ export default function Dashboard() {
                         </button>
                     ))}
                 </div>
-
                 <div className="sub-tab-content">
                     {activeSubTabId === "contentCalendar" && (
                         <div className="content-calendar">
@@ -1154,7 +1373,6 @@ export default function Dashboard() {
                             )}
                         </div>
                     )}
-
                     {activeSubTabId === "assetLibrary" && (
                         <div className="asset-library">
                             {assetLibrary.length === 0 ? (
@@ -1167,7 +1385,7 @@ export default function Dashboard() {
                             ) : (
                                 <div className="asset-grid">
                                     {assetLibrary.map((asset, index) => (
-                                        <div key={index} className="asset-card">
+                                        <div key={`${asset.name}-${index}`} className="asset-card">
                                             <div className="asset-icon">
                                                 {asset.type === 'image' && <FiImage />}
                                                 {asset.type === 'video' && <FiVideo />}
@@ -1192,7 +1410,6 @@ export default function Dashboard() {
                             )}
                         </div>
                     )}
-
                     {activeSubTabId === "campaigns" && (
                         <div className="campaigns">
                             {campaigns.length === 0 ? (
@@ -1217,7 +1434,7 @@ export default function Dashboard() {
                                         </thead>
                                         <tbody>
                                         {campaigns.map((campaign, index) => (
-                                            <tr key={index}>
+                                            <tr key={`${campaign.name}-${index}`}>
                                                 <td>{campaign.name}</td>
                                                 <td>{campaign.platform}</td>
                                                 <td>{campaign.startDate}</td>
@@ -1262,9 +1479,7 @@ export default function Dashboard() {
             { id: "revenueShare", label: "Revenue Share", icon: <FiDollarSign /> },
             { id: "profitLoss", label: "Profit & Loss", icon: <FiTrendingUp /> }
         ];
-
         const activeSubTabId = activeSubTab.finance || "invoices";
-
         return (
             <div className="finance">
                 <div className="section-header">
@@ -1275,7 +1490,6 @@ export default function Dashboard() {
                         </button>
                     </div>
                 </div>
-
                 <div className="sub-tabs">
                     {subTabs.map(tab => (
                         <button
@@ -1288,7 +1502,6 @@ export default function Dashboard() {
                         </button>
                     ))}
                 </div>
-
                 <div className="sub-tab-content">
                     {activeSubTabId === "invoices" && (
                         <div className="invoices">
@@ -1314,7 +1527,7 @@ export default function Dashboard() {
                                         </thead>
                                         <tbody>
                                         {invoices.map((invoice, index) => (
-                                            <tr key={index}>
+                                            <tr key={`${invoice.number}-${index}`}>
                                                 <td>{invoice.number}</td>
                                                 <td>{invoice.client}</td>
                                                 <td>{invoice.amount}</td>
@@ -1341,7 +1554,6 @@ export default function Dashboard() {
                             )}
                         </div>
                     )}
-
                     {activeSubTabId === "revenueShare" && (
                         <div className="revenue-share">
                             <div className="dashboard-section">
@@ -1384,7 +1596,6 @@ export default function Dashboard() {
                             </div>
                         </div>
                     )}
-
                     {activeSubTabId === "profitLoss" && (
                         <div className="profit-loss">
                             <div className="dashboard-section">
@@ -1438,9 +1649,7 @@ export default function Dashboard() {
             { id: "contracts", label: "Contracts", icon: <FiFileText /> },
             { id: "complianceCalendar", label: "Compliance Calendar", icon: <FiCalendar /> }
         ];
-
         const activeSubTabId = activeSubTab.legal || "contracts";
-
         return (
             <div className="legal-compliance">
                 <div className="section-header">
@@ -1451,7 +1660,6 @@ export default function Dashboard() {
                         </button>
                     </div>
                 </div>
-
                 <div className="sub-tabs">
                     {subTabs.map(tab => (
                         <button
@@ -1464,7 +1672,6 @@ export default function Dashboard() {
                         </button>
                     ))}
                 </div>
-
                 <div className="sub-tab-content">
                     {activeSubTabId === "contracts" && (
                         <div className="contracts">
@@ -1491,7 +1698,7 @@ export default function Dashboard() {
                                         </thead>
                                         <tbody>
                                         {contracts.map((contract, index) => (
-                                            <tr key={index}>
+                                            <tr key={`${contract.title}-${index}`}>
                                                 <td>{contract.title}</td>
                                                 <td>{contract.party}</td>
                                                 <td>{contract.type}</td>
@@ -1519,7 +1726,6 @@ export default function Dashboard() {
                             )}
                         </div>
                     )}
-
                     {activeSubTabId === "complianceCalendar" && (
                         <div className="compliance-calendar">
                             {complianceCalendar.length === 0 ? (
@@ -1540,7 +1746,7 @@ export default function Dashboard() {
                                     </div>
                                     <div className="compliance-list">
                                         {complianceCalendar.map((event, index) => (
-                                            <div key={index} className="compliance-item">
+                                            <div key={`${event.title}-${index}`} className="compliance-item">
                                                 <div className="compliance-date">
                                                     <span className="compliance-day">{event.day}</span>
                                                     <span className="compliance-month">{event.month}</span>
@@ -1598,7 +1804,7 @@ export default function Dashboard() {
                             {documents
                                 .filter(doc => doc.category === category)
                                 .map((doc, index) => (
-                                    <div key={index} className="document-item">
+                                    <div key={`${doc.name}-${index}`} className="document-item">
                                         <div className="document-icon">
                                             <FiFile />
                                         </div>
@@ -1642,9 +1848,7 @@ export default function Dashboard() {
             { id: "partners", label: "Partners", icon: <FiBriefcase /> },
             { id: "campaigns", label: "Campaigns", icon: <FiTarget /> }
         ];
-
         const activeSubTabId = activeSubTab.crm || "investors";
-
         return (
             <div className="crm">
                 <div className="section-header">
@@ -1655,7 +1859,6 @@ export default function Dashboard() {
                         </button>
                     </div>
                 </div>
-
                 <div className="sub-tabs">
                     {subTabs.map(tab => (
                         <button
@@ -1668,7 +1871,6 @@ export default function Dashboard() {
                         </button>
                     ))}
                 </div>
-
                 <div className="sub-tab-content">
                     {activeSubTabId === "investors" && (
                         <div className="investors">
@@ -1696,7 +1898,7 @@ export default function Dashboard() {
                                         {investors
                                             .filter(inv => inv.type === 'investor')
                                             .map((investor, index) => (
-                                                <tr key={index}>
+                                                <tr key={`${investor.name}-${index}`}>
                                                     <td>{investor.name}</td>
                                                     <td>{investor.firm}</td>
                                                     <td><span className={`status-badge ${investor.stage?.toLowerCase()}`}>{investor.stage}</span></td>
@@ -1723,7 +1925,6 @@ export default function Dashboard() {
                             )}
                         </div>
                     )}
-
                     {activeSubTabId === "mentors" && (
                         <div className="mentors">
                             {investors.filter(inv => inv.type === 'mentor').length === 0 ? (
@@ -1750,7 +1951,7 @@ export default function Dashboard() {
                                         {investors
                                             .filter(inv => inv.type === 'mentor')
                                             .map((mentor, index) => (
-                                                <tr key={index}>
+                                                <tr key={`${mentor.name}-${index}`}>
                                                     <td>{mentor.name}</td>
                                                     <td>{mentor.expertise}</td>
                                                     <td><span className={`status-badge ${mentor.availability?.toLowerCase()}`}>{mentor.availability}</span></td>
@@ -1777,7 +1978,6 @@ export default function Dashboard() {
                             )}
                         </div>
                     )}
-
                     {activeSubTabId === "partners" && (
                         <div className="partners">
                             {investors.filter(inv => inv.type === 'partner').length === 0 ? (
@@ -1804,7 +2004,7 @@ export default function Dashboard() {
                                         {investors
                                             .filter(inv => inv.type === 'partner')
                                             .map((partner, index) => (
-                                                <tr key={index}>
+                                                <tr key={`${partner.name}-${index}`}>
                                                     <td>{partner.name}</td>
                                                     <td>{partner.company}</td>
                                                     <td>{partner.industry}</td>
@@ -1831,7 +2031,6 @@ export default function Dashboard() {
                             )}
                         </div>
                     )}
-
                     {activeSubTabId === "campaigns" && (
                         <div className="campaigns">
                             {campaigns.length === 0 ? (
@@ -1856,7 +2055,7 @@ export default function Dashboard() {
                                         </thead>
                                         <tbody>
                                         {campaigns.map((campaign, index) => (
-                                            <tr key={index}>
+                                            <tr key={`${campaign.name}-${index}`}>
                                                 <td>{campaign.name}</td>
                                                 <td>{campaign.targetAudience}</td>
                                                 <td>{campaign.startDate}</td>
@@ -1937,7 +2136,7 @@ export default function Dashboard() {
                         </div>
                     ) : (
                         tickets.map((ticket, index) => (
-                            <div key={index} className="ticket-card">
+                            <div key={`${ticket.title}-${index}`} className="ticket-card">
                                 <div className="ticket-header">
                                     <h3>{ticket.title}</h3>
                                     <div className="ticket-meta">
@@ -2080,7 +2279,7 @@ export default function Dashboard() {
                     </div>
                 ) : (
                     automations.map((automation, index) => (
-                        <div key={index} className="automation-card">
+                        <div key={`${automation.name}-${index}`} className="automation-card">
                             <div className="automation-header">
                                 <h3>{automation.name}</h3>
                                 <div className="automation-status">
@@ -2161,7 +2360,7 @@ export default function Dashboard() {
                                     </thead>
                                     <tbody>
                                     {teams.map((user, index) => (
-                                        <tr key={index}>
+                                        <tr key={`${user.name}-${index}`}>
                                             <td className="user-name">
                                                 <div className="user-avatar">
                                                     {user.name.charAt(0)}
@@ -2209,15 +2408,12 @@ export default function Dashboard() {
             { id: "billing", label: "Billing", icon: <FiCreditCard /> },
             { id: "auditLogs", label: "Audit Logs", icon: <FiActivity /> }
         ];
-
         const activeSubTabId = activeSubTab.settings || "branding";
-
         return (
             <div className="settings">
                 <div className="section-header">
                     <h2>Settings</h2>
                 </div>
-
                 <div className="sub-tabs">
                     {subTabs.map(tab => (
                         <button
@@ -2230,7 +2426,6 @@ export default function Dashboard() {
                         </button>
                     ))}
                 </div>
-
                 <div className="sub-tab-content">
                     {activeSubTabId === "branding" && (
                         <div className="branding-settings">
@@ -2282,7 +2477,6 @@ export default function Dashboard() {
                             </div>
                         </div>
                     )}
-
                     {activeSubTabId === "integrations" && (
                         <div className="integrations-settings">
                             <div className="settings-header">
@@ -2294,7 +2488,7 @@ export default function Dashboard() {
                             <div className="integrations-list">
                                 {settings.integrations && settings.integrations.length > 0 ? (
                                     settings.integrations.map((integration, index) => (
-                                        <div key={index} className="integration-card">
+                                        <div key={`${integration.name}-${index}`} className="integration-card">
                                             <div className="integration-header">
                                                 <h4>{integration.name}</h4>
                                                 <span className={`status-badge ${integration.status.toLowerCase()}`}>
@@ -2326,7 +2520,6 @@ export default function Dashboard() {
                             </div>
                         </div>
                     )}
-
                     {activeSubTabId === "security" && (
                         <div className="security-settings">
                             <div className="settings-form">
@@ -2361,7 +2554,6 @@ export default function Dashboard() {
                             </div>
                         </div>
                     )}
-
                     {activeSubTabId === "billing" && (
                         <div className="billing-settings">
                             <div className="billing-overview">
@@ -2430,7 +2622,6 @@ export default function Dashboard() {
                             </div>
                         </div>
                     )}
-
                     {activeSubTabId === "auditLogs" && (
                         <div className="audit-logs">
                             <div className="logs-header">
@@ -2677,7 +2868,9 @@ export default function Dashboard() {
                     <div className="topbar-actions">
                         <button className="btn-icon">
                             <FiBell />
-                            <span className="notification-badge">3</span>
+                            <span className="notification-badge">
+                                {notifications.filter(n => !n.read).length}
+                            </span>
                         </button>
                         <div className="user-profile">
                             <div className="user-avatar">
@@ -2766,9 +2959,13 @@ export default function Dashboard() {
                                             required
                                         >
                                             <option value="">Select assignee</option>
-                                            <option value="You">You</option>
-                                            <option value="Jane">Jane</option>
-                                            <option value="John">John</option>
+                                            <option value="superadmin">Super Admin</option>
+                                            <option value="operations">Operations</option>
+                                            <option value="venture">Venture</option>
+                                            <option value="finance">Finance</option>
+                                            <option value="legal">Legal</option>
+                                            <option value="marketing">Marketing</option>
+                                            <option value="techlead">Tech Lead</option>
                                         </select>
                                     </div>
                                     <div className="form-group">
@@ -3545,7 +3742,53 @@ export default function Dashboard() {
                                     )}
                                 </>
                             )}
-                            {!["event", "task", "venture", "founder", "termSheet", "content", "invoice", "contract", "document", "investor", "ticket", "automation", "user", "setting"].includes(newItem.type) && (
+                            {newItem.type === "approval" && (
+                                <>
+                                    <div className="form-group">
+                                        <label>Type</label>
+                                        <select
+                                            name="type"
+                                            defaultValue={editingItem ? editingItem.type : ''}
+                                            required
+                                        >
+                                            <option value="">Select type</option>
+                                            <option value="Venture">Venture</option>
+                                            <option value="Founder">Founder</option>
+                                            <option value="Contract">Contract</option>
+                                            <option value="Financial">Financial</option>
+                                            <option value="Legal">Legal</option>
+                                        </select>
+                                    </div>
+                                    <div className="form-group">
+                                        <label>Title</label>
+                                        <input
+                                            type="text"
+                                            name="title"
+                                            defaultValue={editingItem ? editingItem.title : ''}
+                                            placeholder="Enter approval title"
+                                            required
+                                        />
+                                    </div>
+                                    <div className="form-group">
+                                        <label>Description</label>
+                                        <textarea
+                                            name="description"
+                                            defaultValue={editingItem ? editingItem.description : ''}
+                                            placeholder="Enter approval description"
+                                        ></textarea>
+                                    </div>
+                                    <div className="form-group">
+                                        <label>Due Date</label>
+                                        <input
+                                            type="date"
+                                            name="dueDate"
+                                            defaultValue={editingItem ? editingItem.dueDate : ''}
+                                            required
+                                        />
+                                    </div>
+                                </>
+                            )}
+                            {!["event", "task", "venture", "founder", "termSheet", "content", "invoice", "contract", "document", "investor", "ticket", "automation", "user", "setting", "approval"].includes(newItem.type) && (
                                 <>
                                     <div className="form-group">
                                         <label>Name</label>
@@ -3569,6 +3812,67 @@ export default function Dashboard() {
                             )}
                             <button type="submit" className="btn-primary">
                                 <FiSave /> {editingItem ? `Update ${newItem.type}` : `Add ${newItem.type}`}
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            )}
+            {showKPIModal && (
+                <div className="modal-overlay">
+                    <div className="modal-container">
+                        <button className="close-btn" onClick={() => setShowKPIModal(false)}>
+                            ✕
+                        </button>
+                        <h2>Edit KPI Overview</h2>
+                        <form onSubmit={handleFormSubmit}>
+                            <input type="hidden" name="type" value="kpi" />
+                            <div className="form-group">
+                                <label>Active Ventures</label>
+                                <input
+                                    type="number"
+                                    name="activeVentures"
+                                    defaultValue={kpiData.activeVentures || 0}
+                                    required
+                                />
+                            </div>
+                            <div className="form-group">
+                                <label>Portfolio ARR</label>
+                                <input
+                                    type="text"
+                                    name="portfolioARR"
+                                    defaultValue={kpiData.portfolioARR || "$0"}
+                                    required
+                                />
+                            </div>
+                            <div className="form-group">
+                                <label>Revenue Share</label>
+                                <input
+                                    type="text"
+                                    name="revenueShare"
+                                    defaultValue={kpiData.revenueShare || "$0"}
+                                    required
+                                />
+                            </div>
+                            <div className="form-group">
+                                <label>Tasks Due</label>
+                                <input
+                                    type="number"
+                                    name="tasksDue"
+                                    defaultValue={kpiData.tasksDue || 0}
+                                    required
+                                />
+                            </div>
+                            <div className="form-group">
+                                <label>Invoices Pending</label>
+                                <input
+                                    type="number"
+                                    name="invoicesPending"
+                                    defaultValue={kpiData.invoicesPending || 0}
+                                    required
+                                />
+                            </div>
+                            <button type="submit" className="btn-primary">
+                                <FiSave /> Update KPI
                             </button>
                         </form>
                     </div>
