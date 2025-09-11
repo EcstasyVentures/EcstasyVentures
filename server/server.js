@@ -7,7 +7,7 @@ const app = express();
 app.use(cors());
 app.use(bodyParser.json());
 
-// Connect to the new admin database
+// Connect to the admin database
 mongoose.connect("mongodb://127.0.0.1:27017/adminDB");
 const db = mongoose.connection;
 db.on("error", console.error.bind(console, "MongoDB connection error:"));
@@ -24,7 +24,6 @@ const AdminSchema = new mongoose.Schema({
     role: { type: String, required: true },
     permissions: { type: [String], required: true }
 });
-
 const Admin = mongoose.model("Admin", AdminSchema);
 
 // Define UserData schema for storing user-specific data
@@ -58,8 +57,18 @@ const UserDataSchema = new mongoose.Schema({
     events: Array,
     activeSubTab: Object
 });
-
 const UserData = mongoose.model("UserData", UserDataSchema);
+
+// NEW: Define Contact schema for storing contact form submissions
+const ContactSchema = new mongoose.Schema({
+    name: { type: String, required: true },
+    email: { type: String, required: true },
+    startup: { type: String, default: "" },
+    message: { type: String, required: true },
+    date: { type: Date, default: Date.now },
+    status: { type: String, default: "New" } // New, In Progress, Resolved
+});
+const Contact = mongoose.model("Contact", ContactSchema);
 
 // Function to create test admin users
 async function createTestAdmins() {
@@ -108,7 +117,6 @@ async function createTestAdmins() {
                 permissions: ["dashboard", "tasks", "automations", "reports"]
             }
         ];
-
         for (const adminData of adminUsers) {
             const adminExists = await Admin.findOne({ username: adminData.username });
             if (!adminExists) {
@@ -161,7 +169,6 @@ app.get("/api/user-data/:userId", async (req, res) => {
     try {
         const userId = req.params.userId;
         let userData = await UserData.findOne({ userId });
-
         if (!userData) {
             // Create default user data if not exists
             userData = new UserData({
@@ -209,7 +216,6 @@ app.get("/api/user-data/:userId", async (req, res) => {
             });
             await userData.save();
         }
-
         res.json(userData);
     } catch (err) {
         console.error(err);
@@ -222,7 +228,6 @@ app.post("/api/user-data/:userId", async (req, res) => {
     try {
         const userId = req.params.userId;
         const data = req.body;
-
         let userData = await UserData.findOne({ userId });
         if (!userData) {
             userData = new UserData({ userId, ...data });
@@ -230,11 +235,75 @@ app.post("/api/user-data/:userId", async (req, res) => {
             // Update existing data
             Object.assign(userData, data);
         }
-
         await userData.save();
         res.json({ success: true });
     } catch (err) {
         console.error(err);
+        res.status(500).json({ error: "Server error" });
+    }
+});
+
+// NEW: Contact form submission route
+app.post("/api/contact", async (req, res) => {
+    try {
+        const { name, email, startup, message } = req.body;
+
+        // Create a new contact document
+        const newContact = new Contact({
+            name,
+            email,
+            startup: startup || "",
+            message
+        });
+
+        // Save to database
+        await newContact.save();
+
+        // Return success response
+        res.status(201).json({
+            success: true,
+            message: "Contact form submitted successfully",
+            contactId: newContact._id
+        });
+    } catch (err) {
+        console.error("Error saving contact form:", err);
+        res.status(500).json({
+            success: false,
+            message: "Failed to submit contact form"
+        });
+    }
+});
+
+// NEW: Get all contact submissions (admin route)
+app.get("/api/contact", async (req, res) => {
+    try {
+        const contacts = await Contact.find().sort({ date: -1 });
+        res.json(contacts);
+    } catch (err) {
+        console.error("Error fetching contacts:", err);
+        res.status(500).json({ error: "Server error" });
+    }
+});
+
+// NEW: Update contact status (admin route)
+app.put("/api/contact/:id", async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { status } = req.body;
+
+        const updatedContact = await Contact.findByIdAndUpdate(
+            id,
+            { status },
+            { new: true }
+        );
+
+        if (!updatedContact) {
+            return res.status(404).json({ error: "Contact not found" });
+        }
+
+        res.json(updatedContact);
+    } catch (err) {
+        console.error("Error updating contact status:", err);
         res.status(500).json({ error: "Server error" });
     }
 });

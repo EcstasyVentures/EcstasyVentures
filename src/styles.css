@@ -4300,3 +4300,86 @@ body {
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
 }
+/* Dark theme styles */
+body.dark-theme {
+    background-color: #1a1a1a;
+    color: #f0f0f0;
+}
+
+body.dark-theme header {
+    background: rgba(30, 30, 30, 0.98);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+body.dark-theme .brand h1 {
+    color: #c3d9e3;
+}
+
+body.dark-theme .brand p {
+    color: #b0b0b0;
+}
+
+body.dark-theme nav a {
+    color: #e0e0e0;
+}
+
+body.dark-theme nav a:hover {
+    color: #c3d9e3;
+}
+
+body.dark-theme nav a::after {
+    background: #c3d9e3;
+}
+
+/* Theme toggle button styles */
+.theme-toggle {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1.5rem;
+    margin-left: 20px;
+    padding: 5px;
+    border-radius: 50%;
+    transition: background-color 0.3s;
+}
+
+.theme-toggle:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+body.dark-theme .theme-toggle:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+/* Add transitions for smooth theme changes */
+body, header, .brand h1, .brand p, nav a {
+    transition: background-color 0.3s, color 0.3s, box-shadow 0.3s;
+}
+.success-message {
+    background-color: #d4edda;
+    color: #155724;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.error-message {
+    background-color: #f8d7da;
+    color: #721c24;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+/* Dark theme styles for messages */
+body.dark-theme .success-message {
+    background-color: #155724;
+    color: #d4edda;
+}
+
+body.dark-theme .error-message {
+    background-color: #721c24;
+    color: #f8d7da;
+}
