@@ -1970,12 +1970,10 @@ body {
     .dashboard-grid {
         grid-template-columns: 1fr;
     }
-
     .pipeline-stages,
     .kanban-board {
         flex-direction: column;
     }
-
     .pipeline-stage,
     .kanban-column {
         min-width: 100%;
@@ -1986,46 +1984,38 @@ body {
     .sidebar {
         width: 70px;
     }
-
     .sidebar-header p,
     .nav-item span,
     .sidebar-footer {
         display: none;
     }
-
     .nav-item {
         justify-content: center;
     }
-
     .topbar {
         padding: 10px 15px;
     }
-
     .search-bar {
         width: 200px;
     }
-
     .content {
         padding: 15px;
     }
-
     .kpi-cards {
         grid-template-columns: 1fr;
     }
-
     .modal-container {
         width: 95%;
         max-width: none;
         margin: 20px;
     }
-
     .modal-container form .form-group input,
     .modal-container form .form-group textarea,
     .modal-container form .form-group select {
         font-size: 0.9rem;
     }
 }
-/* Settings Section Styles */
+
 /* Settings Section Styles */
 .settings {
     padding: 20px;
@@ -2355,6 +2345,7 @@ body {
 .audit-logs .logs-list .data-table tr:hover {
     background-color: #f8f8f8;
 }
+
 /* Add this to your existing styles.css */
 .access-denied {
     display: flex;
@@ -2375,7 +2366,9 @@ body {
 .access-denied p {
     font-size: 1.2rem;
     color: #7f8c8d;
-}/* Deals & Equity Section */
+}
+
+/* Deals & Equity Section */
 .deals-equity {
     padding: 20px;
 }
@@ -2524,6 +2517,7 @@ body {
 .deals-equity .empty-state .btn-primary:hover {
     background: #001530;
 }
+
 /* Growth & Marketing Section */
 .growth-marketing {
     padding: 20px;
@@ -2766,6 +2760,7 @@ body {
 .growth-marketing .empty-state .btn-primary:hover {
     background: #001530;
 }
+
 /* Finance Section */
 .finance {
     padding: 20px;
@@ -3006,6 +3001,7 @@ body {
 .finance .empty-state .btn-primary:hover {
     background: #001530;
 }
+
 /* Legal & Compliance Section */
 .legal-compliance {
     padding: 20px;
@@ -3261,6 +3257,7 @@ body {
 .legal-compliance .empty-state .btn-primary:hover {
     background: #001530;
 }
+
 /* Documents & Assets Section */
 .documents {
     padding: 20px;
@@ -3426,6 +3423,7 @@ body {
     color: #001530;
     text-decoration: underline;
 }
+
 /* CRM & Outreach Section */
 .crm {
     padding: 20px;
@@ -3601,6 +3599,7 @@ body {
 .crm .empty-state .btn-primary:hover {
     background: #001530;
 }
+
 /* Support & Tickets Section */
 .support {
     padding: 20px;
@@ -3802,6 +3801,7 @@ body {
 .support .empty-state .btn-primary:hover {
     background: #001530;
 }
+
 /* Reports & Analytics Section */
 .reports {
     padding: 20px;
@@ -3913,6 +3913,7 @@ body {
 .reports .report-footer .btn-secondary:hover {
     background: #e0e0e0;
 }
+
 /* Automations Section */
 .automations {
     padding: 20px;
@@ -4047,6 +4048,7 @@ body {
 .automations .empty-state .btn-primary:hover {
     background: #001530;
 }
+
 /* Users & Teams Section */
 .users {
     padding: 20px;
@@ -4277,6 +4279,7 @@ body {
         grid-template-columns: 1fr;
     }
 }
+
 .loading-container {
     display: flex;
     flex-direction: column;
@@ -4300,6 +4303,7 @@ body {
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
 }
+
 /* Dark theme styles */
 body.dark-theme {
     background-color: #1a1a1a;
@@ -4355,6 +4359,7 @@ body.dark-theme .theme-toggle:hover {
 body, header, .brand h1, .brand p, nav a {
     transition: background-color 0.3s, color 0.3s, box-shadow 0.3s;
 }
+
 .success-message {
     background-color: #d4edda;
     color: #155724;
