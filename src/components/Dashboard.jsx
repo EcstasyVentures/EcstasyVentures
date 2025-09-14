@@ -10,6 +10,58 @@ import {
 } from "react-icons/fi";
 import "../styles.css";
 
+// Role-based permissions mapping
+const rolePermissions = {
+    'superAdmin': [
+        'dashboard', 'ventures', 'founders', 'tasks', 'deals', 'growth', 'finance', 
+        'legal', 'documents', 'crm', 'support', 'reports', 'automations', 'users', 'settings'
+    ],
+    'operationsAdmin': [
+        'dashboard', 'ventures', 'founders', 'tasks', 'support', 'documents'
+    ],
+    'venturePartner': [
+        'dashboard', 'ventures', 'founders', 'deals', 'crm', 'documents'
+    ],
+    'financeAdmin': [
+        'dashboard', 'deals', 'finance', 'documents'
+    ],
+    'legalAdmin': [
+        'dashboard', 'legal', 'documents'
+    ],
+    'growthMarketing': [
+        'dashboard', 'growth', 'crm', 'documents'
+    ],
+    'techLead': [
+        'dashboard', 'tasks', 'automations', 'documents'
+    ]
+};
+
+// Role-based edit permissions
+const editPermissions = {
+    'superAdmin': [
+        'dashboard', 'ventures', 'founders', 'tasks', 'deals', 'growth', 'finance', 
+        'legal', 'documents', 'crm', 'support', 'reports', 'automations', 'users', 'settings'
+    ],
+    'operationsAdmin': [
+        'dashboard', 'ventures', 'founders', 'tasks', 'support'
+    ],
+    'venturePartner': [
+        'dashboard', 'ventures', 'founders', 'deals', 'crm'
+    ],
+    'financeAdmin': [
+        'dashboard', 'deals', 'finance'
+    ],
+    'legalAdmin': [
+        'dashboard', 'legal'
+    ],
+    'growthMarketing': [
+        'dashboard', 'growth', 'crm'
+    ],
+    'techLead': [
+        'dashboard', 'tasks', 'automations'
+    ]
+};
+
 export default function Dashboard() {
     const navigate = useNavigate();
     const [activeTab, setActiveTab] = useState("dashboard");
@@ -24,7 +76,7 @@ export default function Dashboard() {
     const [newItem, setNewItem] = useState({});
     const [editingItem, setEditingItem] = useState(null);
     const [showKPIModal, setShowKPIModal] = useState(false);
-
+    
     // New state variables for all sections
     const [termSheets, setTermSheets] = useState([]);
     const [capTable, setCapTable] = useState([]);
@@ -59,10 +111,10 @@ export default function Dashboard() {
         crm: "investors",
         settings: "branding"
     });
-
+    
     // Counter for unique IDs
     const [idCounter, setIdCounter] = useState(1);
-
+    
     // Ref to hold current state for saving
     const stateRef = useRef();
     stateRef.current = {
@@ -95,6 +147,18 @@ export default function Dashboard() {
         activeSubTab
     };
 
+    // Function to check if user has permission for a section
+    const hasPermission = (section) => {
+        if (!user || !user.role) return false;
+        return rolePermissions[user.role]?.includes(section) || false;
+    };
+
+    // Function to check if user has edit permission for a section
+    const hasEditPermission = (section) => {
+        if (!user || !user.role) return false;
+        return editPermissions[user.role]?.includes(section) || false;
+    };
+
     // Function to generate unique ID
     const generateUniqueId = () => {
         const newId = idCounter;
@@ -106,7 +170,6 @@ export default function Dashboard() {
     const saveUserData = useCallback(async () => {
         const username = localStorage.getItem("username");
         if (!username) return;
-
         try {
             const response = await fetch(`http://localhost:5000/api/user-data/${username}`, {
                 method: 'POST',
@@ -129,7 +192,6 @@ export default function Dashboard() {
         const timer = setTimeout(() => {
             saveUserData();
         }, 1000); // Save after 1 second of inactivity
-
         return () => clearTimeout(timer);
     }, [kpiData, approvals, ventures, founders, tasks, termSheets, capTable, equityLedger,
         vestingSchedules, contentCalendar, assetLibrary, campaigns, invoices, revenueShare, profitLoss,
@@ -140,11 +202,9 @@ export default function Dashboard() {
     const fetchUserData = async () => {
         const username = localStorage.getItem("username");
         if (!username) return;
-
         try {
             const response = await fetch(`http://localhost:5000/api/user-data/${username}`);
             const userData = await response.json();
-
             // Set all state variables from userData
             setKpiData(userData.kpiData || {});
             setApprovals(userData.approvals || []);
@@ -185,7 +245,6 @@ export default function Dashboard() {
                 crm: "investors",
                 settings: "branding"
             });
-
             // Find the highest ID to set the counter
             const allItems = [
                 ...userData.kpiData || [],
@@ -212,12 +271,10 @@ export default function Dashboard() {
                 ...userData.notifications || [],
                 ...userData.events || []
             ];
-
             const maxId = allItems.reduce((max, item) => {
                 const itemId = parseInt(item.id);
                 return itemId > max ? itemId : max;
             }, 0);
-
             setIdCounter(maxId + 1);
         } catch (error) {
             console.error('Error fetching user data:', error);
@@ -243,18 +300,81 @@ export default function Dashboard() {
     };
 
     const handleAddItem = (type, data = {}) => {
+        // Check if user has permission to add items in this section
+        const section = type === 'event' || type === 'approval' || type === 'kpi' ? 'dashboard' :
+                        type === 'venture' ? 'ventures' :
+                        type === 'founder' ? 'founders' :
+                        type === 'task' ? 'tasks' :
+                        type === 'termSheet' || type === 'capTable' || type === 'equityLedger' || type === 'vestingSchedule' ? 'deals' :
+                        type === 'content' || type === 'asset' || type === 'campaign' ? 'growth' :
+                        type === 'invoice' || type === 'revenueShare' || type === 'profitLoss' ? 'finance' :
+                        type === 'contract' || type === 'complianceEvent' ? 'legal' :
+                        type === 'document' ? 'documents' :
+                        type === 'investor' || type === 'mentor' || type === 'partner' ? 'crm' :
+                        type === 'ticket' ? 'support' :
+                        type === 'automation' ? 'automations' :
+                        type === 'user' ? 'users' :
+                        type === 'setting' ? 'settings' : '';
+        
+        if (!hasEditPermission(section)) {
+            alert("You don't have permission to add items in this section");
+            return;
+        }
+        
         setNewItem({ type, ...data });
         setEditingItem(null);
         setShowAddModal(true);
     };
 
     const handleEditItem = (item, type) => {
+        // Check if user has permission to edit items in this section
+        const section = type === 'event' || type === 'approval' ? 'dashboard' :
+                        type === 'venture' ? 'ventures' :
+                        type === 'founder' ? 'founders' :
+                        type === 'task' ? 'tasks' :
+                        type === 'termSheet' || type === 'capTable' || type === 'equityLedger' || type === 'vestingSchedule' ? 'deals' :
+                        type === 'content' || type === 'asset' || type === 'campaign' ? 'growth' :
+                        type === 'invoice' ? 'finance' :
+                        type === 'contract' || type === 'complianceEvent' ? 'legal' :
+                        type === 'document' ? 'documents' :
+                        type === 'investor' || type === 'mentor' || type === 'partner' ? 'crm' :
+                        type === 'ticket' ? 'support' :
+                        type === 'automation' ? 'automations' :
+                        type === 'user' ? 'users' :
+                        type === 'setting' ? 'settings' : '';
+        
+        if (!hasEditPermission(section)) {
+            alert("You don't have permission to edit items in this section");
+            return;
+        }
+        
         setEditingItem(item);
         setNewItem({ type });
         setShowAddModal(true);
     };
 
     const handleDeleteItem = (id, type) => {
+        // Check if user has permission to delete items in this section
+        const section = type === 'event' || type === 'approval' ? 'dashboard' :
+                        type === 'venture' ? 'ventures' :
+                        type === 'founder' ? 'founders' :
+                        type === 'task' ? 'tasks' :
+                        type === 'termSheet' || type === 'capTable' || type === 'equityLedger' || type === 'vestingSchedule' ? 'deals' :
+                        type === 'content' || type === 'asset' || type === 'campaign' ? 'growth' :
+                        type === 'invoice' ? 'finance' :
+                        type === 'contract' || type === 'complianceEvent' ? 'legal' :
+                        type === 'document' ? 'documents' :
+                        type === 'investor' || type === 'mentor' || type === 'partner' ? 'crm' :
+                        type === 'ticket' ? 'support' :
+                        type === 'automation' ? 'automations' :
+                        type === 'user' ? 'users' :
+                        type === 'setting' ? 'settings' : '';
+        
+        if (!hasEditPermission(section)) {
+            alert("You don't have permission to delete items in this section");
+            return;
+        }
+        
         if (window.confirm("Are you sure you want to delete this item?")) {
             switch (type) {
                 case 'event':
@@ -332,6 +452,12 @@ export default function Dashboard() {
     };
 
     const handleApprove = (id) => {
+        // Check if user has permission to approve items
+        if (!hasEditPermission('dashboard')) {
+            alert("You don't have permission to approve items");
+            return;
+        }
+        
         const approval = approvals.find(item => item.id === id);
         if (approval) {
             // Create notification for the requester
@@ -343,7 +469,6 @@ export default function Dashboard() {
                 read: false
             };
             setNotifications([...notifications, newNotification]);
-
             // Remove from approvals
             setApprovals(approvals.filter(item => item.id !== id));
             alert(`Approved item with ID: ${id}`);
@@ -351,6 +476,12 @@ export default function Dashboard() {
     };
 
     const handleReject = (id) => {
+        // Check if user has permission to reject items
+        if (!hasEditPermission('dashboard')) {
+            alert("You don't have permission to reject items");
+            return;
+        }
+        
         const approval = approvals.find(item => item.id === id);
         if (approval) {
             // Create notification for the requester
@@ -362,7 +493,6 @@ export default function Dashboard() {
                 read: false
             };
             setNotifications([...notifications, newNotification]);
-
             // Remove from approvals
             setApprovals(approvals.filter(item => item.id !== id));
             alert(`Rejected item with ID: ${id}`);
@@ -379,7 +509,30 @@ export default function Dashboard() {
         e.preventDefault();
         const formData = new FormData(e.target);
         const data = Object.fromEntries(formData.entries());
-
+        
+        // Check if user has permission to submit this form
+        const section = newItem.type === 'event' || newItem.type === 'approval' || newItem.type === 'kpi' ? 'dashboard' :
+                        newItem.type === 'venture' ? 'ventures' :
+                        newItem.type === 'founder' ? 'founders' :
+                        newItem.type === 'task' ? 'tasks' :
+                        newItem.type === 'termSheet' || newItem.type === 'capTable' || newItem.type === 'equityLedger' || newItem.type === 'vestingSchedule' ? 'deals' :
+                        newItem.type === 'content' || newItem.type === 'asset' || newItem.type === 'campaign' ? 'growth' :
+                        newItem.type === 'invoice' || newItem.type === 'revenueShare' || newItem.type === 'profitLoss' ? 'finance' :
+                        newItem.type === 'contract' || newItem.type === 'complianceEvent' ? 'legal' :
+                        newItem.type === 'document' ? 'documents' :
+                        newItem.type === 'investor' || newItem.type === 'mentor' || newItem.type === 'partner' ? 'crm' :
+                        newItem.type === 'ticket' ? 'support' :
+                        newItem.type === 'automation' ? 'automations' :
+                        newItem.type === 'user' ? 'users' :
+                        newItem.type === 'setting' ? 'settings' : '';
+        
+        if (!hasEditPermission(section)) {
+            alert("You don't have permission to submit this form");
+            setShowAddModal(false);
+            setEditingItem(null);
+            return;
+        }
+        
         // Handle different form types
         switch (newItem.type) {
             case 'event':
@@ -410,7 +563,6 @@ export default function Dashboard() {
                     setTasks(tasks.map(task => task.id === editingItem.id ? newTask : task));
                 } else {
                     setTasks([...tasks, newTask]);
-
                     // If task is assigned to someone else, create notification
                     if (data.assignee !== user.username) {
                         const newNotification = {
@@ -640,7 +792,6 @@ export default function Dashboard() {
                     setApprovals(approvals.map(approval => approval.id === editingItem.id ? newApproval : approval));
                 } else {
                     setApprovals([...approvals, newApproval]);
-
                     // Create notification for all admins
                     const adminUsers = ['superadmin', 'operations', 'venture', 'finance', 'legal', 'marketing', 'techlead'];
                     adminUsers.forEach(admin => {
@@ -683,15 +834,17 @@ export default function Dashboard() {
         setEditingItem(null);
     };
 
-    // Render functions for each section
+    // Render functions with permission checks
     const renderDashboardHome = () => (
         <div className="dashboard-home">
             <div className="dashboard-section">
                 <div className="section-header">
                     <h2>KPI Overview</h2>
-                    <button className="btn-icon" onClick={() => setShowKPIModal(true)}>
-                        <FiEdit />
-                    </button>
+                    {hasEditPermission('dashboard') && (
+                        <button className="btn-icon" onClick={() => setShowKPIModal(true)}>
+                            <FiEdit />
+                        </button>
+                    )}
                 </div>
                 <div className="kpi-cards">
                     <div className="kpi-card">
@@ -745,17 +898,21 @@ export default function Dashboard() {
                 <div className="dashboard-section">
                     <div className="section-header">
                         <h2>Pending Approvals</h2>
-                        <button className="btn-icon" onClick={() => handleAddItem("approval")}>
-                            <FiPlus />
-                        </button>
+                        {hasEditPermission('dashboard') && (
+                            <button className="btn-icon" onClick={() => handleAddItem("approval")}>
+                                <FiPlus />
+                            </button>
+                        )}
                     </div>
                     <div className="approvals-list">
                         {approvals.length === 0 ? (
                             <div className="empty-state">
                                 <p>No pending approvals</p>
-                                <button className="btn-primary" onClick={() => handleAddItem("approval")}>
-                                    Add Approval
-                                </button>
+                                {hasEditPermission('dashboard') && (
+                                    <button className="btn-primary" onClick={() => handleAddItem("approval")}>
+                                        Add Approval
+                                    </button>
+                                )}
                             </div>
                         ) : (
                             approvals.map(item => (
@@ -767,15 +924,19 @@ export default function Dashboard() {
                                         <p>Requested by: {item.requestedBy}</p>
                                     </div>
                                     <div className="approval-actions">
-                                        <button className="btn-approve" onClick={() => handleApprove(item.id)}>
-                                            <FiCheck /> Approve
-                                        </button>
-                                        <button className="btn-reject" onClick={() => handleReject(item.id)}>
-                                            <FiX /> Reject
-                                        </button>
-                                        <button className="btn-icon" onClick={() => handleDeleteItem(item.id, 'approval')}>
-                                            <FiTrash2 />
-                                        </button>
+                                        {hasEditPermission('dashboard') && (
+                                            <>
+                                                <button className="btn-approve" onClick={() => handleApprove(item.id)}>
+                                                    <FiCheck /> Approve
+                                                </button>
+                                                <button className="btn-reject" onClick={() => handleReject(item.id)}>
+                                                    <FiX /> Reject
+                                                </button>
+                                                <button className="btn-icon" onClick={() => handleDeleteItem(item.id, 'approval')}>
+                                                    <FiTrash2 />
+                                                </button>
+                                            </>
+                                        )}
                                     </div>
                                 </div>
                             ))
@@ -814,9 +975,11 @@ export default function Dashboard() {
             <div className="dashboard-section">
                 <div className="section-header">
                     <h2>Upcoming Events</h2>
-                    <button className="btn-icon" onClick={() => handleAddItem("event")}>
-                        <FiPlus />
-                    </button>
+                    {hasEditPermission('dashboard') && (
+                        <button className="btn-icon" onClick={() => handleAddItem("event")}>
+                            <FiPlus />
+                        </button>
+                    )}
                 </div>
                 <div className="calendar-view">
                     <div className="calendar-header">
@@ -844,9 +1007,11 @@ export default function Dashboard() {
                         {events.length === 0 ? (
                             <div className="empty-state">
                                 <p>No events scheduled</p>
-                                <button className="btn-primary" onClick={() => handleAddItem("event")}>
-                                    Add Event
-                                </button>
+                                {hasEditPermission('dashboard') && (
+                                    <button className="btn-primary" onClick={() => handleAddItem("event")}>
+                                        Add Event
+                                    </button>
+                                )}
                             </div>
                         ) : (
                             events.map(event => (
@@ -859,14 +1024,16 @@ export default function Dashboard() {
                                         <h4>{event.title}</h4>
                                         <p>{event.time}</p>
                                     </div>
-                                    <div className="event-actions">
-                                        <button className="btn-icon" onClick={() => handleEditItem(event, 'event')}>
-                                            <FiEdit />
-                                        </button>
-                                        <button className="btn-icon" onClick={() => handleDeleteItem(event.id, 'event')}>
-                                            <FiTrash2 />
-                                        </button>
-                                    </div>
+                                    {hasEditPermission('dashboard') && (
+                                        <div className="event-actions">
+                                            <button className="btn-icon" onClick={() => handleEditItem(event, 'event')}>
+                                                <FiEdit />
+                                            </button>
+                                            <button className="btn-icon" onClick={() => handleDeleteItem(event.id, 'event')}>
+                                                <FiTrash2 />
+                                            </button>
+                                        </div>
+                                    )}
                                 </div>
                             ))
                         )}
@@ -880,17 +1047,19 @@ export default function Dashboard() {
         <div className="ventures-management">
             <div className="section-header">
                 <h2>Ventures Pipeline</h2>
-                <div className="header-actions">
-                    <button className="btn-icon">
-                        <FiFilter />
-                    </button>
-                    <button className="btn-icon">
-                        <FiDownload />
-                    </button>
-                    <button className="btn-primary" onClick={() => handleAddItem("venture")}>
-                        <FiPlus /> Add Venture
-                    </button>
-                </div>
+                {hasEditPermission('ventures') && (
+                    <div className="header-actions">
+                        <button className="btn-icon">
+                            <FiFilter />
+                        </button>
+                        <button className="btn-icon">
+                            <FiDownload />
+                        </button>
+                        <button className="btn-primary" onClick={() => handleAddItem("venture")}>
+                            <FiPlus /> Add Venture
+                        </button>
+                    </div>
+                )}
             </div>
             <div className="pipeline-stages">
                 {['Lead', 'Diligence', 'Term Sheet', 'Build', 'Live', 'Scaling', 'Exit'].map(stage => (
@@ -903,14 +1072,16 @@ export default function Dashboard() {
                                     <div key={venture.id} className="venture-card">
                                         <div className="venture-header">
                                             <h4>{venture.name}</h4>
-                                            <div className="venture-actions">
-                                                <button className="btn-icon" onClick={() => handleEditItem(venture, "venture")}>
-                                                    <FiEdit />
-                                                </button>
-                                                <button className="btn-icon" onClick={() => handleDeleteItem(venture.id, "venture")}>
-                                                    <FiTrash2 />
-                                                </button>
-                                            </div>
+                                            {hasEditPermission('ventures') && (
+                                                <div className="venture-actions">
+                                                    <button className="btn-icon" onClick={() => handleEditItem(venture, "venture")}>
+                                                        <FiEdit />
+                                                    </button>
+                                                    <button className="btn-icon" onClick={() => handleDeleteItem(venture.id, "venture")}>
+                                                        <FiTrash2 />
+                                                    </button>
+                                                </div>
+                                            )}
                                         </div>
                                         <div className="venture-details">
                                             <p><span>Industry:</span> {venture.industry}</p>
@@ -927,9 +1098,11 @@ export default function Dashboard() {
                             {ventures.filter(v => v.stage === stage).length === 0 && (
                                 <div className="empty-stage">
                                     <p>No ventures in this stage</p>
-                                    <button className="btn-text" onClick={() => handleAddItem("venture", { stage })}>
-                                        Add Venture
-                                    </button>
+                                    {hasEditPermission('ventures') && (
+                                        <button className="btn-text" onClick={() => handleAddItem("venture", { stage })}>
+                                            Add Venture
+                                        </button>
+                                    )}
                                 </div>
                             )}
                         </div>
@@ -948,9 +1121,11 @@ export default function Dashboard() {
                         <FiSearch />
                         <input type="text" placeholder="Search founders..." />
                     </div>
-                    <button className="btn-primary" onClick={() => handleAddItem("founder")}>
-                        <FiPlus /> Add Founder
-                    </button>
+                    {hasEditPermission('founders') && (
+                        <button className="btn-primary" onClick={() => handleAddItem("founder")}>
+                            <FiPlus /> Add Founder
+                        </button>
+                    )}
                 </div>
             </div>
             <div className="founders-table-container">
@@ -970,9 +1145,11 @@ export default function Dashboard() {
                         <tr>
                             <td colSpan="6" className="empty-table">
                                 <p>No founders found</p>
-                                <button className="btn-primary" onClick={() => handleAddItem("founder")}>
-                                    Add Founder
-                                </button>
+                                {hasEditPermission('founders') && (
+                                    <button className="btn-primary" onClick={() => handleAddItem("founder")}>
+                                        Add Founder
+                                    </button>
+                                )}
                             </td>
                         </tr>
                     ) : (
@@ -995,14 +1172,16 @@ export default function Dashboard() {
                                     <button className="btn-text">Contact</button>
                                 </td>
                                 <td>
-                                    <div className="table-actions">
-                                        <button className="btn-icon" onClick={() => handleEditItem(founder, "founder")}>
-                                            <FiEdit />
-                                        </button>
-                                        <button className="btn-icon" onClick={() => handleDeleteItem(founder.id, "founder")}>
-                                            <FiTrash2 />
-                                        </button>
-                                    </div>
+                                    {hasEditPermission('founders') && (
+                                        <div className="table-actions">
+                                            <button className="btn-icon" onClick={() => handleEditItem(founder, "founder")}>
+                                                <FiEdit />
+                                            </button>
+                                            <button className="btn-icon" onClick={() => handleDeleteItem(founder.id, "founder")}>
+                                                <FiTrash2 />
+                                            </button>
+                                        </div>
+                                    )}
                                 </td>
                             </tr>
                         ))
@@ -1017,11 +1196,13 @@ export default function Dashboard() {
         <div className="tasks-sprints">
             <div className="section-header">
                 <h2>Task Management</h2>
-                <div className="header-actions">
-                    <button className="btn-primary" onClick={() => handleAddItem("task")}>
-                        <FiPlus /> Add Task
-                    </button>
-                </div>
+                {hasEditPermission('tasks') && (
+                    <div className="header-actions">
+                        <button className="btn-primary" onClick={() => handleAddItem("task")}>
+                            <FiPlus /> Add Task
+                        </button>
+                    </div>
+                )}
             </div>
             <div className="kanban-board">
                 {['To Do', 'In Progress', 'Done'].map(status => (
@@ -1034,14 +1215,16 @@ export default function Dashboard() {
                                     <div key={task.id} className="task-card">
                                         <div className="task-header">
                                             <h4>{task.title}</h4>
-                                            <div className="task-actions">
-                                                <button className="btn-icon" onClick={() => handleEditItem(task, "task")}>
-                                                    <FiEdit />
-                                                </button>
-                                                <button className="btn-icon" onClick={() => handleDeleteItem(task.id, "task")}>
-                                                    <FiTrash2 />
-                                                </button>
-                                            </div>
+                                            {hasEditPermission('tasks') && (
+                                                <div className="task-actions">
+                                                    <button className="btn-icon" onClick={() => handleEditItem(task, "task")}>
+                                                        <FiEdit />
+                                                    </button>
+                                                    <button className="btn-icon" onClick={() => handleDeleteItem(task.id, "task")}>
+                                                        <FiTrash2 />
+                                                    </button>
+                                                </div>
+                                            )}
                                         </div>
                                         <div className="task-details">
                                             <p><span>Assignee:</span> {task.assignee}</p>
@@ -1057,9 +1240,11 @@ export default function Dashboard() {
                             {tasks.filter(task => task.status === status.toLowerCase().replace(' ', '')).length === 0 && (
                                 <div className="empty-column">
                                     <p>No tasks</p>
-                                    <button className="btn-text" onClick={() => handleAddItem("task", { status })}>
-                                        Add Task
-                                    </button>
+                                    {hasEditPermission('tasks') && (
+                                        <button className="btn-text" onClick={() => handleAddItem("task", { status })}>
+                                            Add Task
+                                        </button>
+                                    )}
                                 </div>
                             )}
                         </div>
@@ -1082,11 +1267,13 @@ export default function Dashboard() {
             <div className="deals-equity">
                 <div className="section-header">
                     <h2>Deals & Equity</h2>
-                    <div className="header-actions">
-                        <button className="btn-primary" onClick={() => handleAddItem(activeSubTabId)}>
-                            <FiPlus /> Add {subTabs.find(t => t.id === activeSubTabId)?.label}
-                        </button>
-                    </div>
+                    {hasEditPermission('deals') && (
+                        <div className="header-actions">
+                            <button className="btn-primary" onClick={() => handleAddItem(activeSubTabId)}>
+                                <FiPlus /> Add {subTabs.find(t => t.id === activeSubTabId)?.label}
+                            </button>
+                        </div>
+                    )}
                 </div>
                 <div className="sub-tabs">
                     {subTabs.map(tab => (
@@ -1106,9 +1293,11 @@ export default function Dashboard() {
                             {termSheets.length === 0 ? (
                                 <div className="empty-state">
                                     <p>No term sheets available</p>
-                                    <button className="btn-primary" onClick={() => handleAddItem("termSheet")}>
-                                        Add Term Sheet
-                                    </button>
+                                    {hasEditPermission('deals') && (
+                                        <button className="btn-primary" onClick={() => handleAddItem("termSheet")}>
+                                            Add Term Sheet
+                                        </button>
+                                    )}
                                 </div>
                             ) : (
                                 <div className="data-table">
@@ -1130,17 +1319,19 @@ export default function Dashboard() {
                                                 <td>{sheet.amount}</td>
                                                 <td><span className={`status-badge ${sheet.status.toLowerCase()}`}>{sheet.status}</span></td>
                                                 <td>
-                                                    <div className="table-actions">
-                                                        <button className="btn-icon" onClick={() => handleEditItem(sheet, "termSheet")}>
-                                                            <FiEdit />
-                                                        </button>
-                                                        <button className="btn-icon" onClick={() => handleDeleteItem(sheet.id, "termSheet")}>
-                                                            <FiTrash2 />
-                                                        </button>
-                                                        <button className="btn-icon">
-                                                            <FiEye />
-                                                        </button>
-                                                    </div>
+                                                    {hasEditPermission('deals') && (
+                                                        <div className="table-actions">
+                                                            <button className="btn-icon" onClick={() => handleEditItem(sheet, "termSheet")}>
+                                                                <FiEdit />
+                                                            </button>
+                                                            <button className="btn-icon" onClick={() => handleDeleteItem(sheet.id, "termSheet")}>
+                                                                <FiTrash2 />
+                                                            </button>
+                                                            <button className="btn-icon">
+                                                                <FiEye />
+                                                            </button>
+                                                        </div>
+                                                    )}
                                                 </td>
                                             </tr>
                                         ))}
@@ -1155,9 +1346,11 @@ export default function Dashboard() {
                             {capTable.length === 0 ? (
                                 <div className="empty-state">
                                     <p>No cap table data available</p>
-                                    <button className="btn-primary" onClick={() => handleAddItem("capTable")}>
-                                        Add Cap Table Entry
-                                    </button>
+                                    {hasEditPermission('deals') && (
+                                        <button className="btn-primary" onClick={() => handleAddItem("capTable")}>
+                                            Add Cap Table Entry
+                                        </button>
+                                    )}
                                 </div>
                             ) : (
                                 <div className="data-table">
@@ -1179,14 +1372,16 @@ export default function Dashboard() {
                                                 <td>{entry.percentage}%</td>
                                                 <td>{entry.class}</td>
                                                 <td>
-                                                    <div className="table-actions">
-                                                        <button className="btn-icon" onClick={() => handleEditItem(entry, "capTable")}>
-                                                            <FiEdit />
-                                                        </button>
-                                                        <button className="btn-icon" onClick={() => handleDeleteItem(index, "capTable")}>
-                                                            <FiTrash2 />
-                                                        </button>
-                                                    </div>
+                                                    {hasEditPermission('deals') && (
+                                                        <div className="table-actions">
+                                                            <button className="btn-icon" onClick={() => handleEditItem(entry, "capTable")}>
+                                                                <FiEdit />
+                                                            </button>
+                                                            <button className="btn-icon" onClick={() => handleDeleteItem(index, "capTable")}>
+                                                                <FiTrash2 />
+                                                            </button>
+                                                        </div>
+                                                    )}
                                                 </td>
                                             </tr>
                                         ))}
@@ -1201,9 +1396,11 @@ export default function Dashboard() {
                             {equityLedger.length === 0 ? (
                                 <div className="empty-state">
                                     <p>No equity ledger entries available</p>
-                                    <button className="btn-primary" onClick={() => handleAddItem("equityLedger")}>
-                                        Add Equity Ledger Entry
-                                    </button>
+                                    {hasEditPermission('deals') && (
+                                        <button className="btn-primary" onClick={() => handleAddItem("equityLedger")}>
+                                            Add Equity Ledger Entry
+                                        </button>
+                                    )}
                                 </div>
                             ) : (
                                 <div className="data-table">
@@ -1225,14 +1422,16 @@ export default function Dashboard() {
                                                 <td>{entry.shares}</td>
                                                 <td>{entry.value}</td>
                                                 <td>
-                                                    <div className="table-actions">
-                                                        <button className="btn-icon" onClick={() => handleEditItem(entry, "equityLedger")}>
-                                                            <FiEdit />
-                                                        </button>
-                                                        <button className="btn-icon" onClick={() => handleDeleteItem(index, "equityLedger")}>
-                                                            <FiTrash2 />
-                                                        </button>
-                                                    </div>
+                                                    {hasEditPermission('deals') && (
+                                                        <div className="table-actions">
+                                                            <button className="btn-icon" onClick={() => handleEditItem(entry, "equityLedger")}>
+                                                                <FiEdit />
+                                                            </button>
+                                                            <button className="btn-icon" onClick={() => handleDeleteItem(index, "equityLedger")}>
+                                                                <FiTrash2 />
+                                                            </button>
+                                                        </div>
+                                                    )}
                                                 </td>
                                             </tr>
                                         ))}
@@ -1247,9 +1446,11 @@ export default function Dashboard() {
                             {vestingSchedules.length === 0 ? (
                                 <div className="empty-state">
                                     <p>No vesting schedules available</p>
-                                    <button className="btn-primary" onClick={() => handleAddItem("vestingSchedule")}>
-                                        Add Vesting Schedule
-                                    </button>
+                                    {hasEditPermission('deals') && (
+                                        <button className="btn-primary" onClick={() => handleAddItem("vestingSchedule")}>
+                                            Add Vesting Schedule
+                                        </button>
+                                    )}
                                 </div>
                             ) : (
                                 <div className="data-table">
@@ -1271,14 +1472,16 @@ export default function Dashboard() {
                                                 <td>{schedule.totalShares}</td>
                                                 <td>{schedule.vestingPeriod}</td>
                                                 <td>
-                                                    <div className="table-actions">
-                                                        <button className="btn-icon" onClick={() => handleEditItem(schedule, "vestingSchedule")}>
-                                                            <FiEdit />
-                                                        </button>
-                                                        <button className="btn-icon" onClick={() => handleDeleteItem(index, "vestingSchedule")}>
-                                                            <FiTrash2 />
-                                                        </button>
-                                                    </div>
+                                                    {hasEditPermission('deals') && (
+                                                        <div className="table-actions">
+                                                            <button className="btn-icon" onClick={() => handleEditItem(schedule, "vestingSchedule")}>
+                                                                <FiEdit />
+                                                            </button>
+                                                            <button className="btn-icon" onClick={() => handleDeleteItem(index, "vestingSchedule")}>
+                                                                <FiTrash2 />
+                                                            </button>
+                                                        </div>
+                                                    )}
                                                 </td>
                                             </tr>
                                         ))}
@@ -1305,11 +1508,13 @@ export default function Dashboard() {
             <div className="growth-marketing">
                 <div className="section-header">
                     <h2>Growth & Marketing</h2>
-                    <div className="header-actions">
-                        <button className="btn-primary" onClick={() => handleAddItem(activeSubTabId)}>
-                            <FiPlus /> Add {subTabs.find(t => t.id === activeSubTabId)?.label}
-                        </button>
-                    </div>
+                    {hasEditPermission('growth') && (
+                        <div className="header-actions">
+                            <button className="btn-primary" onClick={() => handleAddItem(activeSubTabId)}>
+                                <FiPlus /> Add {subTabs.find(t => t.id === activeSubTabId)?.label}
+                            </button>
+                        </div>
+                    )}
                 </div>
                 <div className="sub-tabs">
                     {subTabs.map(tab => (
@@ -1329,9 +1534,11 @@ export default function Dashboard() {
                             {contentCalendar.length === 0 ? (
                                 <div className="empty-state">
                                     <p>No content scheduled</p>
-                                    <button className="btn-primary" onClick={() => handleAddItem("content")}>
-                                        Add Content
-                                    </button>
+                                    {hasEditPermission('growth') && (
+                                        <button className="btn-primary" onClick={() => handleAddItem("content")}>
+                                            Add Content
+                                        </button>
+                                    )}
                                 </div>
                             ) : (
                                 <div className="calendar-view">
@@ -1358,14 +1565,16 @@ export default function Dashboard() {
                                                         </span>
                                                     </p>
                                                 </div>
-                                                <div className="content-actions">
-                                                    <button className="btn-icon" onClick={() => handleEditItem(content, "content")}>
-                                                        <FiEdit />
-                                                    </button>
-                                                    <button className="btn-icon" onClick={() => handleDeleteItem(content.id, "content")}>
-                                                        <FiTrash2 />
-                                                    </button>
-                                                </div>
+                                                {hasEditPermission('growth') && (
+                                                    <div className="content-actions">
+                                                        <button className="btn-icon" onClick={() => handleEditItem(content, "content")}>
+                                                            <FiEdit />
+                                                        </button>
+                                                        <button className="btn-icon" onClick={() => handleDeleteItem(content.id, "content")}>
+                                                            <FiTrash2 />
+                                                        </button>
+                                                    </div>
+                                                )}
                                             </div>
                                         ))}
                                     </div>
@@ -1378,9 +1587,11 @@ export default function Dashboard() {
                             {assetLibrary.length === 0 ? (
                                 <div className="empty-state">
                                     <p>No assets in library</p>
-                                    <button className="btn-primary" onClick={() => handleAddItem("asset")}>
-                                        Add Asset
-                                    </button>
+                                    {hasEditPermission('growth') && (
+                                        <button className="btn-primary" onClick={() => handleAddItem("asset")}>
+                                            Add Asset
+                                        </button>
+                                    )}
                                 </div>
                             ) : (
                                 <div className="asset-grid">
@@ -1393,17 +1604,19 @@ export default function Dashboard() {
                                             </div>
                                             <h4>{asset.name}</h4>
                                             <p>{asset.category}</p>
-                                            <div className="asset-actions">
-                                                <button className="btn-icon" onClick={() => handleEditItem(asset, "asset")}>
-                                                    <FiEdit />
-                                                </button>
-                                                <button className="btn-icon" onClick={() => handleDeleteItem(index, "asset")}>
-                                                    <FiTrash2 />
-                                                </button>
-                                                <button className="btn-icon">
-                                                    <FiDownload />
-                                                </button>
-                                            </div>
+                                            {hasEditPermission('growth') && (
+                                                <div className="asset-actions">
+                                                    <button className="btn-icon" onClick={() => handleEditItem(asset, "asset")}>
+                                                        <FiEdit />
+                                                    </button>
+                                                    <button className="btn-icon" onClick={() => handleDeleteItem(index, "asset")}>
+                                                        <FiTrash2 />
+                                                    </button>
+                                                    <button className="btn-icon">
+                                                        <FiDownload />
+                                                    </button>
+                                                </div>
+                                            )}
                                         </div>
                                     ))}
                                 </div>
@@ -1415,9 +1628,11 @@ export default function Dashboard() {
                             {campaigns.length === 0 ? (
                                 <div className="empty-state">
                                     <p>No campaigns available</p>
-                                    <button className="btn-primary" onClick={() => handleAddItem("campaign")}>
-                                        Add Campaign
-                                    </button>
+                                    {hasEditPermission('growth') && (
+                                        <button className="btn-primary" onClick={() => handleAddItem("campaign")}>
+                                            Add Campaign
+                                        </button>
+                                    )}
                                 </div>
                             ) : (
                                 <div className="data-table">
@@ -1447,17 +1662,19 @@ export default function Dashboard() {
                                                     </div>
                                                 </td>
                                                 <td>
-                                                    <div className="table-actions">
-                                                        <button className="btn-icon" onClick={() => handleEditItem(campaign, "campaign")}>
-                                                            <FiEdit />
-                                                        </button>
-                                                        <button className="btn-icon" onClick={() => handleDeleteItem(index, "campaign")}>
-                                                            <FiTrash2 />
-                                                        </button>
-                                                        <button className="btn-icon">
-                                                            <FiBarChart2 />
-                                                        </button>
-                                                    </div>
+                                                    {hasEditPermission('growth') && (
+                                                        <div className="table-actions">
+                                                            <button className="btn-icon" onClick={() => handleEditItem(campaign, "campaign")}>
+                                                                <FiEdit />
+                                                            </button>
+                                                            <button className="btn-icon" onClick={() => handleDeleteItem(index, "campaign")}>
+                                                                <FiTrash2 />
+                                                            </button>
+                                                            <button className="btn-icon">
+                                                                <FiBarChart2 />
+                                                            </button>
+                                                        </div>
+                                                    )}
                                                 </td>
                                             </tr>
                                         ))}
@@ -1484,11 +1701,13 @@ export default function Dashboard() {
             <div className="finance">
                 <div className="section-header">
                     <h2>Finance</h2>
-                    <div className="header-actions">
-                        <button className="btn-primary" onClick={() => handleAddItem(activeSubTabId)}>
-                            <FiPlus /> Add {subTabs.find(t => t.id === activeSubTabId)?.label}
-                        </button>
-                    </div>
+                    {hasEditPermission('finance') && (
+                        <div className="header-actions">
+                            <button className="btn-primary" onClick={() => handleAddItem(activeSubTabId)}>
+                                <FiPlus /> Add {subTabs.find(t => t.id === activeSubTabId)?.label}
+                            </button>
+                        </div>
+                    )}
                 </div>
                 <div className="sub-tabs">
                     {subTabs.map(tab => (
@@ -1508,9 +1727,11 @@ export default function Dashboard() {
                             {invoices.length === 0 ? (
                                 <div className="empty-state">
                                     <p>No invoices available</p>
-                                    <button className="btn-primary" onClick={() => handleAddItem("invoice")}>
-                                        Add Invoice
-                                    </button>
+                                    {hasEditPermission('finance') && (
+                                        <button className="btn-primary" onClick={() => handleAddItem("invoice")}>
+                                            Add Invoice
+                                        </button>
+                                    )}
                                 </div>
                             ) : (
                                 <div className="data-table">
@@ -1534,17 +1755,19 @@ export default function Dashboard() {
                                                 <td>{invoice.dueDate}</td>
                                                 <td><span className={`status-badge ${invoice.status.toLowerCase()}`}>{invoice.status}</span></td>
                                                 <td>
-                                                    <div className="table-actions">
-                                                        <button className="btn-icon" onClick={() => handleEditItem(invoice, "invoice")}>
-                                                            <FiEdit />
-                                                        </button>
-                                                        <button className="btn-icon" onClick={() => handleDeleteItem(index, "invoice")}>
-                                                            <FiTrash2 />
-                                                        </button>
-                                                        <button className="btn-icon">
-                                                            <FiDownload />
-                                                        </button>
-                                                    </div>
+                                                    {hasEditPermission('finance') && (
+                                                        <div className="table-actions">
+                                                            <button className="btn-icon" onClick={() => handleEditItem(invoice, "invoice")}>
+                                                                <FiEdit />
+                                                            </button>
+                                                            <button className="btn-icon" onClick={() => handleDeleteItem(index, "invoice")}>
+                                                                <FiTrash2 />
+                                                            </button>
+                                                            <button className="btn-icon">
+                                                                <FiDownload />
+                                                            </button>
+                                                        </div>
+                                                    )}
                                                 </td>
                                             </tr>
                                         ))}
@@ -1654,11 +1877,13 @@ export default function Dashboard() {
             <div className="legal-compliance">
                 <div className="section-header">
                     <h2>Legal & Compliance</h2>
-                    <div className="header-actions">
-                        <button className="btn-primary" onClick={() => handleAddItem(activeSubTabId)}>
-                            <FiPlus /> Add {subTabs.find(t => t.id === activeSubTabId)?.label}
-                        </button>
-                    </div>
+                    {hasEditPermission('legal') && (
+                        <div className="header-actions">
+                            <button className="btn-primary" onClick={() => handleAddItem(activeSubTabId)}>
+                                <FiPlus /> Add {subTabs.find(t => t.id === activeSubTabId)?.label}
+                            </button>
+                        </div>
+                    )}
                 </div>
                 <div className="sub-tabs">
                     {subTabs.map(tab => (
@@ -1678,9 +1903,11 @@ export default function Dashboard() {
                             {contracts.length === 0 ? (
                                 <div className="empty-state">
                                     <p>No contracts available</p>
-                                    <button className="btn-primary" onClick={() => handleAddItem("contract")}>
-                                        Add Contract
-                                    </button>
+                                    {hasEditPermission('legal') && (
+                                        <button className="btn-primary" onClick={() => handleAddItem("contract")}>
+                                            Add Contract
+                                        </button>
+                                    )}
                                 </div>
                             ) : (
                                 <div className="data-table">
@@ -1706,17 +1933,19 @@ export default function Dashboard() {
                                                 <td>{contract.endDate}</td>
                                                 <td><span className={`status-badge ${contract.status.toLowerCase()}`}>{contract.status}</span></td>
                                                 <td>
-                                                    <div className="table-actions">
-                                                        <button className="btn-icon" onClick={() => handleEditItem(contract, "contract")}>
-                                                            <FiEdit />
-                                                        </button>
-                                                        <button className="btn-icon" onClick={() => handleDeleteItem(index, "contract")}>
-                                                            <FiTrash2 />
-                                                        </button>
-                                                        <button className="btn-icon">
-                                                            <FiDownload />
-                                                        </button>
-                                                    </div>
+                                                    {hasEditPermission('legal') && (
+                                                        <div className="table-actions">
+                                                            <button className="btn-icon" onClick={() => handleEditItem(contract, "contract")}>
+                                                                <FiEdit />
+                                                            </button>
+                                                            <button className="btn-icon" onClick={() => handleDeleteItem(index, "contract")}>
+                                                                <FiTrash2 />
+                                                            </button>
+                                                            <button className="btn-icon">
+                                                                <FiDownload />
+                                                            </button>
+                                                        </div>
+                                                    )}
                                                 </td>
                                             </tr>
                                         ))}
@@ -1731,9 +1960,11 @@ export default function Dashboard() {
                             {complianceCalendar.length === 0 ? (
                                 <div className="empty-state">
                                     <p>No compliance events scheduled</p>
-                                    <button className="btn-primary" onClick={() => handleAddItem("complianceEvent")}>
-                                        Add Compliance Event
-                                    </button>
+                                    {hasEditPermission('legal') && (
+                                        <button className="btn-primary" onClick={() => handleAddItem("complianceEvent")}>
+                                            Add Compliance Event
+                                        </button>
+                                    )}
                                 </div>
                             ) : (
                                 <div className="calendar-view">
@@ -1761,14 +1992,16 @@ export default function Dashboard() {
                                                         </span>
                                                     </p>
                                                 </div>
-                                                <div className="compliance-actions">
-                                                    <button className="btn-icon" onClick={() => handleEditItem(event, "complianceEvent")}>
-                                                        <FiEdit />
-                                                    </button>
-                                                    <button className="btn-icon" onClick={() => handleDeleteItem(index, "complianceEvent")}>
-                                                        <FiTrash2 />
-                                                    </button>
-                                                </div>
+                                                {hasEditPermission('legal') && (
+                                                    <div className="compliance-actions">
+                                                        <button className="btn-icon" onClick={() => handleEditItem(event, "complianceEvent")}>
+                                                            <FiEdit />
+                                                        </button>
+                                                        <button className="btn-icon" onClick={() => handleDeleteItem(index, "complianceEvent")}>
+                                                            <FiTrash2 />
+                                                        </button>
+                                                    </div>
+                                                )}
                                             </div>
                                         ))}
                                     </div>
@@ -1791,9 +2024,11 @@ export default function Dashboard() {
                         <FiSearch />
                         <input type="text" placeholder="Search documents..." />
                     </div>
-                    <button className="btn-primary" onClick={() => handleAddItem("document")}>
-                        <FiPlus /> Add Document
-                    </button>
+                    {hasEditPermission('documents') && (
+                        <button className="btn-primary" onClick={() => handleAddItem("document")}>
+                            <FiPlus /> Add Document
+                        </button>
+                    )}
                 </div>
             </div>
             <div className="document-categories">
@@ -1812,25 +2047,29 @@ export default function Dashboard() {
                                             <h4>{doc.name}</h4>
                                             <p><span>Access:</span> {doc.accessLevel}</p>
                                         </div>
-                                        <div className="document-actions">
-                                            <button className="btn-icon" onClick={() => handleEditItem(doc, "document")}>
-                                                <FiEdit />
-                                            </button>
-                                            <button className="btn-icon" onClick={() => handleDeleteItem(index, "document")}>
-                                                <FiTrash2 />
-                                            </button>
-                                            <button className="btn-icon">
-                                                <FiDownload />
-                                            </button>
-                                        </div>
+                                        {hasEditPermission('documents') && (
+                                            <div className="document-actions">
+                                                <button className="btn-icon" onClick={() => handleEditItem(doc, "document")}>
+                                                    <FiEdit />
+                                                </button>
+                                                <button className="btn-icon" onClick={() => handleDeleteItem(index, "document")}>
+                                                    <FiTrash2 />
+                                                </button>
+                                                <button className="btn-icon">
+                                                    <FiDownload />
+                                                </button>
+                                            </div>
+                                        )}
                                     </div>
                                 ))}
                             {documents.filter(doc => doc.category === category).length === 0 && (
                                 <div className="empty-category">
                                     <p>No documents in this category</p>
-                                    <button className="btn-text" onClick={() => handleAddItem("document", { category })}>
-                                        Add Document
-                                    </button>
+                                    {hasEditPermission('documents') && (
+                                        <button className="btn-text" onClick={() => handleAddItem("document", { category })}>
+                                            Add Document
+                                        </button>
+                                    )}
                                 </div>
                             )}
                         </div>
@@ -1853,11 +2092,13 @@ export default function Dashboard() {
             <div className="crm">
                 <div className="section-header">
                     <h2>CRM & Outreach</h2>
-                    <div className="header-actions">
-                        <button className="btn-primary" onClick={() => handleAddItem(activeSubTabId)}>
-                            <FiPlus /> Add {subTabs.find(t => t.id === activeSubTabId)?.label}
-                        </button>
-                    </div>
+                    {hasEditPermission('crm') && (
+                        <div className="header-actions">
+                            <button className="btn-primary" onClick={() => handleAddItem(activeSubTabId)}>
+                                <FiPlus /> Add {subTabs.find(t => t.id === activeSubTabId)?.label}
+                            </button>
+                        </div>
+                    )}
                 </div>
                 <div className="sub-tabs">
                     {subTabs.map(tab => (
@@ -1877,9 +2118,11 @@ export default function Dashboard() {
                             {investors.filter(inv => inv.type === 'investor').length === 0 ? (
                                 <div className="empty-state">
                                     <p>No investors available</p>
-                                    <button className="btn-primary" onClick={() => handleAddItem("investor", { type: 'investor' })}>
-                                        Add Investor
-                                    </button>
+                                    {hasEditPermission('crm') && (
+                                        <button className="btn-primary" onClick={() => handleAddItem("investor", { type: 'investor' })}>
+                                            Add Investor
+                                        </button>
+                                    )}
                                 </div>
                             ) : (
                                 <div className="data-table">
@@ -1905,17 +2148,19 @@ export default function Dashboard() {
                                                     <td>{investor.email}</td>
                                                     <td>{investor.phone}</td>
                                                     <td>
-                                                        <div className="table-actions">
-                                                            <button className="btn-icon" onClick={() => handleEditItem(investor, "investor")}>
-                                                                <FiEdit />
-                                                            </button>
-                                                            <button className="btn-icon" onClick={() => handleDeleteItem(index, "investor")}>
-                                                                <FiTrash2 />
-                                                            </button>
-                                                            <button className="btn-icon">
-                                                                <FiMail />
-                                                            </button>
-                                                        </div>
+                                                        {hasEditPermission('crm') && (
+                                                            <div className="table-actions">
+                                                                <button className="btn-icon" onClick={() => handleEditItem(investor, "investor")}>
+                                                                    <FiEdit />
+                                                                </button>
+                                                                <button className="btn-icon" onClick={() => handleDeleteItem(index, "investor")}>
+                                                                    <FiTrash2 />
+                                                                </button>
+                                                                <button className="btn-icon">
+                                                                    <FiMail />
+                                                                </button>
+                                                            </div>
+                                                        )}
                                                     </td>
                                                 </tr>
                                             ))}
@@ -1930,9 +2175,11 @@ export default function Dashboard() {
                             {investors.filter(inv => inv.type === 'mentor').length === 0 ? (
                                 <div className="empty-state">
                                     <p>No mentors available</p>
-                                    <button className="btn-primary" onClick={() => handleAddItem("investor", { type: 'mentor' })}>
-                                        Add Mentor
-                                    </button>
+                                    {hasEditPermission('crm') && (
+                                        <button className="btn-primary" onClick={() => handleAddItem("investor", { type: 'mentor' })}>
+                                            Add Mentor
+                                        </button>
+                                    )}
                                 </div>
                             ) : (
                                 <div className="data-table">
@@ -1958,17 +2205,19 @@ export default function Dashboard() {
                                                     <td>{mentor.email}</td>
                                                     <td>{mentor.phone}</td>
                                                     <td>
-                                                        <div className="table-actions">
-                                                            <button className="btn-icon" onClick={() => handleEditItem(mentor, "investor")}>
-                                                                <FiEdit />
-                                                            </button>
-                                                            <button className="btn-icon" onClick={() => handleDeleteItem(index, "investor")}>
-                                                                <FiTrash2 />
-                                                            </button>
-                                                            <button className="btn-icon">
-                                                                <FiMail />
-                                                            </button>
-                                                        </div>
+                                                        {hasEditPermission('crm') && (
+                                                            <div className="table-actions">
+                                                                <button className="btn-icon" onClick={() => handleEditItem(mentor, "investor")}>
+                                                                    <FiEdit />
+                                                                </button>
+                                                                <button className="btn-icon" onClick={() => handleDeleteItem(index, "investor")}>
+                                                                    <FiTrash2 />
+                                                                </button>
+                                                                <button className="btn-icon">
+                                                                    <FiMail />
+                                                                </button>
+                                                            </div>
+                                                        )}
                                                     </td>
                                                 </tr>
                                             ))}
@@ -1983,9 +2232,11 @@ export default function Dashboard() {
                             {investors.filter(inv => inv.type === 'partner').length === 0 ? (
                                 <div className="empty-state">
                                     <p>No partners available</p>
-                                    <button className="btn-primary" onClick={() => handleAddItem("investor", { type: 'partner' })}>
-                                        Add Partner
-                                    </button>
+                                    {hasEditPermission('crm') && (
+                                        <button className="btn-primary" onClick={() => handleAddItem("investor", { type: 'partner' })}>
+                                            Add Partner
+                                        </button>
+                                    )}
                                 </div>
                             ) : (
                                 <div className="data-table">
@@ -2011,17 +2262,19 @@ export default function Dashboard() {
                                                     <td>{partner.partnershipType}</td>
                                                     <td>{partner.email}</td>
                                                     <td>
-                                                        <div className="table-actions">
-                                                            <button className="btn-icon" onClick={() => handleEditItem(partner, "investor")}>
-                                                                <FiEdit />
-                                                            </button>
-                                                            <button className="btn-icon" onClick={() => handleDeleteItem(index, "investor")}>
-                                                                <FiTrash2 />
-                                                            </button>
-                                                            <button className="btn-icon">
-                                                                <FiMail />
-                                                            </button>
-                                                        </div>
+                                                        {hasEditPermission('crm') && (
+                                                            <div className="table-actions">
+                                                                <button className="btn-icon" onClick={() => handleEditItem(partner, "investor")}>
+                                                                    <FiEdit />
+                                                                </button>
+                                                                <button className="btn-icon" onClick={() => handleDeleteItem(index, "investor")}>
+                                                                    <FiTrash2 />
+                                                                </button>
+                                                                <button className="btn-icon">
+                                                                    <FiMail />
+                                                                </button>
+                                                            </div>
+                                                        )}
                                                     </td>
                                                 </tr>
                                             ))}
@@ -2036,9 +2289,11 @@ export default function Dashboard() {
                             {campaigns.length === 0 ? (
                                 <div className="empty-state">
                                     <p>No campaigns available</p>
-                                    <button className="btn-primary" onClick={() => handleAddItem("campaign")}>
-                                        Add Campaign
-                                    </button>
+                                    {hasEditPermission('crm') && (
+                                        <button className="btn-primary" onClick={() => handleAddItem("campaign")}>
+                                            Add Campaign
+                                        </button>
+                                    )}
                                 </div>
                             ) : (
                                 <div className="data-table">
@@ -2068,17 +2323,19 @@ export default function Dashboard() {
                                                     </div>
                                                 </td>
                                                 <td>
-                                                    <div className="table-actions">
-                                                        <button className="btn-icon" onClick={() => handleEditItem(campaign, "campaign")}>
-                                                            <FiEdit />
-                                                        </button>
-                                                        <button className="btn-icon" onClick={() => handleDeleteItem(index, "campaign")}>
-                                                            <FiTrash2 />
-                                                        </button>
-                                                        <button className="btn-icon">
-                                                            <FiBarChart2 />
-                                                        </button>
-                                                    </div>
+                                                    {hasEditPermission('crm') && (
+                                                        <div className="table-actions">
+                                                            <button className="btn-icon" onClick={() => handleEditItem(campaign, "campaign")}>
+                                                                <FiEdit />
+                                                            </button>
+                                                            <button className="btn-icon" onClick={() => handleDeleteItem(index, "campaign")}>
+                                                                <FiTrash2 />
+                                                            </button>
+                                                            <button className="btn-icon">
+                                                                <FiBarChart2 />
+                                                            </button>
+                                                        </div>
+                                                    )}
                                                 </td>
                                             </tr>
                                         ))}
@@ -2098,11 +2355,13 @@ export default function Dashboard() {
         <div className="support">
             <div className="section-header">
                 <h2>Support & Tickets</h2>
-                <div className="header-actions">
-                    <button className="btn-primary" onClick={() => handleAddItem("ticket")}>
-                        <FiPlus /> Add Ticket
-                    </button>
-                </div>
+                {hasEditPermission('support') && (
+                    <div className="header-actions">
+                        <button className="btn-primary" onClick={() => handleAddItem("ticket")}>
+                            <FiPlus /> Add Ticket
+                        </button>
+                    </div>
+                )}
             </div>
             <div className="tickets-container">
                 <div className="tickets-filters">
@@ -2130,9 +2389,11 @@ export default function Dashboard() {
                     {tickets.length === 0 ? (
                         <div className="empty-state">
                             <p>No support tickets available</p>
-                            <button className="btn-primary" onClick={() => handleAddItem("ticket")}>
-                                Add Ticket
-                            </button>
+                            {hasEditPermission('support') && (
+                                <button className="btn-primary" onClick={() => handleAddItem("ticket")}>
+                                    Add Ticket
+                                </button>
+                            )}
                         </div>
                     ) : (
                         tickets.map((ticket, index) => (
@@ -2153,17 +2414,19 @@ export default function Dashboard() {
                                     <p><span>SLA:</span> {ticket.sla} hours</p>
                                     <p>{ticket.description}</p>
                                 </div>
-                                <div className="ticket-actions">
-                                    <button className="btn-icon" onClick={() => handleEditItem(ticket, "ticket")}>
-                                        <FiEdit />
-                                    </button>
-                                    <button className="btn-icon" onClick={() => handleDeleteItem(index, "ticket")}>
-                                        <FiTrash2 />
-                                    </button>
-                                    <button className="btn-icon">
-                                        <FiMail />
-                                    </button>
-                                </div>
+                                {hasEditPermission('support') && (
+                                    <div className="ticket-actions">
+                                        <button className="btn-icon" onClick={() => handleEditItem(ticket, "ticket")}>
+                                            <FiEdit />
+                                        </button>
+                                        <button className="btn-icon" onClick={() => handleDeleteItem(index, "ticket")}>
+                                            <FiTrash2 />
+                                        </button>
+                                        <button className="btn-icon">
+                                            <FiMail />
+                                        </button>
+                                    </div>
+                                )}
                             </div>
                         ))
                     )}
@@ -2184,9 +2447,11 @@ export default function Dashboard() {
                     <button className="btn-icon">
                         <FiDownload />
                     </button>
-                    <button className="btn-primary">
-                        <FiPlus /> Generate Report
-                    </button>
+                    {hasEditPermission('reports') && (
+                        <button className="btn-primary">
+                            <FiPlus /> Generate Report
+                        </button>
+                    )}
                 </div>
             </div>
             <div className="reports-grid">
@@ -2263,19 +2528,23 @@ export default function Dashboard() {
         <div className="automations">
             <div className="section-header">
                 <h2>Automations</h2>
-                <div className="header-actions">
-                    <button className="btn-primary" onClick={() => handleAddItem("automation")}>
-                        <FiPlus /> Add Automation
-                    </button>
-                </div>
+                {hasEditPermission('automations') && (
+                    <div className="header-actions">
+                        <button className="btn-primary" onClick={() => handleAddItem("automation")}>
+                            <FiPlus /> Add Automation
+                        </button>
+                    </div>
+                )}
             </div>
             <div className="automations-list">
                 {automations.length === 0 ? (
                     <div className="empty-state">
                         <p>No automations configured</p>
-                        <button className="btn-primary" onClick={() => handleAddItem("automation")}>
-                            Add Automation
-                        </button>
+                        {hasEditPermission('automations') && (
+                            <button className="btn-primary" onClick={() => handleAddItem("automation")}>
+                                Add Automation
+                            </button>
+                        )}
                     </div>
                 ) : (
                     automations.map((automation, index) => (
@@ -2293,17 +2562,19 @@ export default function Dashboard() {
                                 <p><span>Action:</span> {automation.action}</p>
                                 <p><span>Schedule:</span> {automation.schedule}</p>
                             </div>
-                            <div className="automation-actions">
-                                <button className="btn-icon" onClick={() => handleEditItem(automation, "automation")}>
-                                    <FiEdit />
-                                </button>
-                                <button className="btn-icon" onClick={() => handleDeleteItem(index, "automation")}>
-                                    <FiTrash2 />
-                                </button>
-                                <button className="btn-icon">
-                                    <FiPlay />
-                                </button>
-                            </div>
+                            {hasEditPermission('automations') && (
+                                <div className="automation-actions">
+                                    <button className="btn-icon" onClick={() => handleEditItem(automation, "automation")}>
+                                        <FiEdit />
+                                    </button>
+                                    <button className="btn-icon" onClick={() => handleDeleteItem(index, "automation")}>
+                                        <FiTrash2 />
+                                    </button>
+                                    <button className="btn-icon">
+                                        <FiPlay />
+                                    </button>
+                                </div>
+                            )}
                         </div>
                     ))
                 )}
@@ -2316,11 +2587,13 @@ export default function Dashboard() {
         <div className="users">
             <div className="section-header">
                 <h2>Users & Teams</h2>
-                <div className="header-actions">
-                    <button className="btn-primary" onClick={() => handleAddItem("user")}>
-                        <FiPlus /> Add User
-                    </button>
-                </div>
+                {hasEditPermission('users') && (
+                    <div className="header-actions">
+                        <button className="btn-primary" onClick={() => handleAddItem("user")}>
+                            <FiPlus /> Add User
+                        </button>
+                    </div>
+                )}
             </div>
             <div className="users-grid">
                 <div className="teams-section">
@@ -2341,9 +2614,11 @@ export default function Dashboard() {
                         {teams.length === 0 ? (
                             <div className="empty-state">
                                 <p>No users available</p>
-                                <button className="btn-primary" onClick={() => handleAddItem("user")}>
-                                    Add User
-                                </button>
+                                {hasEditPermission('users') && (
+                                    <button className="btn-primary" onClick={() => handleAddItem("user")}>
+                                        Add User
+                                    </button>
+                                )}
                             </div>
                         ) : (
                             <div className="data-table">
@@ -2378,14 +2653,16 @@ export default function Dashboard() {
                                                 </div>
                                             </td>
                                             <td>
-                                                <div className="table-actions">
-                                                    <button className="btn-icon" onClick={() => handleEditItem(user, "user")}>
-                                                        <FiEdit />
-                                                    </button>
-                                                    <button className="btn-icon" onClick={() => handleDeleteItem(index, "user")}>
-                                                        <FiTrash2 />
-                                                    </button>
-                                                </div>
+                                                {hasEditPermission('users') && (
+                                                    <div className="table-actions">
+                                                        <button className="btn-icon" onClick={() => handleEditItem(user, "user")}>
+                                                            <FiEdit />
+                                                        </button>
+                                                        <button className="btn-icon" onClick={() => handleDeleteItem(index, "user")}>
+                                                            <FiTrash2 />
+                                                        </button>
+                                                    </div>
+                                                )}
                                             </td>
                                         </tr>
                                     ))}
@@ -2481,9 +2758,11 @@ export default function Dashboard() {
                         <div className="integrations-settings">
                             <div className="settings-header">
                                 <h3>Integrations</h3>
-                                <button className="btn-primary" onClick={() => handleAddItem("setting", { typeData: { type: 'integration' } })}>
-                                    <FiPlus /> Add Integration
-                                </button>
+                                {hasEditPermission('settings') && (
+                                    <button className="btn-primary" onClick={() => handleAddItem("setting", { typeData: { type: 'integration' } })}>
+                                        <FiPlus /> Add Integration
+                                    </button>
+                                )}
                             </div>
                             <div className="integrations-list">
                                 {settings.integrations && settings.integrations.length > 0 ? (
@@ -2499,22 +2778,26 @@ export default function Dashboard() {
                                                 <p>{integration.description}</p>
                                                 <p><span>Connected:</span> {integration.connectedDate}</p>
                                             </div>
-                                            <div className="integration-actions">
-                                                <button className="btn-icon" onClick={() => handleEditItem(integration, "setting")}>
-                                                    <FiEdit />
-                                                </button>
-                                                <button className="btn-icon" onClick={() => handleDeleteItem(index, "setting")}>
-                                                    <FiTrash2 />
-                                                </button>
-                                            </div>
+                                            {hasEditPermission('settings') && (
+                                                <div className="integration-actions">
+                                                    <button className="btn-icon" onClick={() => handleEditItem(integration, "setting")}>
+                                                        <FiEdit />
+                                                    </button>
+                                                    <button className="btn-icon" onClick={() => handleDeleteItem(index, "setting")}>
+                                                        <FiTrash2 />
+                                                    </button>
+                                                </div>
+                                            )}
                                         </div>
                                     ))
                                 ) : (
                                     <div className="empty-state">
                                         <p>No integrations configured</p>
-                                        <button className="btn-primary" onClick={() => handleAddItem("setting", { typeData: { type: 'integration' } })}>
-                                            Add Integration
-                                        </button>
+                                        {hasEditPermission('settings') && (
+                                            <button className="btn-primary" onClick={() => handleAddItem("setting", { typeData: { type: 'integration' } })}>
+                                                Add Integration
+                                            </button>
+                                        )}
                                     </div>
                                 )}
                             </div>
@@ -2700,6 +2983,19 @@ export default function Dashboard() {
     };
 
     const renderContent = () => {
+        // Check if user has permission to view this section
+        if (!hasPermission(activeTab)) {
+            return (
+                <div className="unauthorized">
+                    <h2>Access Denied</h2>
+                    <p>You don't have permission to view this section.</p>
+                    <button className="btn-primary" onClick={() => setActiveTab("dashboard")}>
+                        Go to Dashboard
+                    </button>
+                </div>
+            );
+        }
+
         switch (activeTab) {
             case "dashboard":
                 return renderDashboardHome();
@@ -2747,111 +3043,141 @@ export default function Dashboard() {
                     <p>Admin Portal</p>
                 </div>
                 <nav className="sidebar-nav">
-                    <button
-                        className={`nav-item ${activeTab === "dashboard" ? "active" : ""}`}
-                        onClick={() => setActiveTab("dashboard")}
-                    >
-                        <FiHome />
-                        <span>Dashboard</span>
-                    </button>
-                    <button
-                        className={`nav-item ${activeTab === "ventures" ? "active" : ""}`}
-                        onClick={() => setActiveTab("ventures")}
-                    >
-                        <FiPieChart />
-                        <span>Ventures</span>
-                    </button>
-                    <button
-                        className={`nav-item ${activeTab === "founders" ? "active" : ""}`}
-                        onClick={() => setActiveTab("founders")}
-                    >
-                        <FiUsers />
-                        <span>Founders</span>
-                    </button>
-                    <button
-                        className={`nav-item ${activeTab === "deals" ? "active" : ""}`}
-                        onClick={() => setActiveTab("deals")}
-                    >
-                        <FiDollarSign />
-                        <span>Deals & Equity</span>
-                    </button>
-                    <button
-                        className={`nav-item ${activeTab === "tasks" ? "active" : ""}`}
-                        onClick={() => setActiveTab("tasks")}
-                    >
-                        <FiCheckSquare />
-                        <span>Tasks & Sprints</span>
-                    </button>
-                    <button
-                        className={`nav-item ${activeTab === "growth" ? "active" : ""}`}
-                        onClick={() => setActiveTab("growth")}
-                    >
-                        <FiTrendingUp />
-                        <span>Growth & Marketing</span>
-                    </button>
-                    <button
-                        className={`nav-item ${activeTab === "finance" ? "active" : ""}`}
-                        onClick={() => setActiveTab("finance")}
-                    >
-                        <FiCreditCard />
-                        <span>Finance</span>
-                    </button>
-                    <button
-                        className={`nav-item ${activeTab === "legal" ? "active" : ""}`}
-                        onClick={() => setActiveTab("legal")}
-                    >
-                        <FiFileText />
-                        <span>Legal & Compliance</span>
-                    </button>
-                    <button
-                        className={`nav-item ${activeTab === "documents" ? "active" : ""}`}
-                        onClick={() => setActiveTab("documents")}
-                    >
-                        <FiFolder />
-                        <span>Documents</span>
-                    </button>
-                    <button
-                        className={`nav-item ${activeTab === "crm" ? "active" : ""}`}
-                        onClick={() => setActiveTab("crm")}
-                    >
-                        <FiMessageSquare />
-                        <span>CRM & Outreach</span>
-                    </button>
-                    <button
-                        className={`nav-item ${activeTab === "support" ? "active" : ""}`}
-                        onClick={() => setActiveTab("support")}
-                    >
-                        <FiHelpCircle />
-                        <span>Support & Tickets</span>
-                    </button>
-                    <button
-                        className={`nav-item ${activeTab === "reports" ? "active" : ""}`}
-                        onClick={() => setActiveTab("reports")}
-                    >
-                        <FiBarChart2 />
-                        <span>Reports & Analytics</span>
-                    </button>
-                    <button
-                        className={`nav-item ${activeTab === "automations" ? "active" : ""}`}
-                        onClick={() => setActiveTab("automations")}
-                    >
-                        <FiSettings />
-                        <span>Automations</span>
-                    </button>
-                    <button
-                        className={`nav-item ${activeTab === "users" ? "active" : ""}`}
-                        onClick={() => setActiveTab("users")}
-                    >
-                        <FiUsers />
-                        <span>Users & Teams</span>
-                    </button>
-                    <button
-                        className={`nav-item ${activeTab === "settings" ? "active" : ""}`}
-                        onClick={() => setActiveTab("settings")}
-                    >
-                        <FiSettings />
-                        <span>Settings</span>
-                    </button>
+                    {hasPermission('dashboard') && (
+                        <button
+                            className={`nav-item ${activeTab === "dashboard" ? "active" : ""}`}
+                            onClick={() => setActiveTab("dashboard")}
+                        >
+                            <FiHome />
+                            <span>Dashboard</span>
+                        </button>
+                    )}
+                    {hasPermission('ventures') && (
+                        <button
+                            className={`nav-item ${activeTab === "ventures" ? "active" : ""}`}
+                            onClick={() => setActiveTab("ventures")}
+                        >
+                            <FiPieChart />
+                            <span>Ventures</span>
+                        </button>
+                    )}
+                    {hasPermission('founders') && (
+                        <button
+                            className={`nav-item ${activeTab === "founders" ? "active" : ""}`}
+                            onClick={() => setActiveTab("founders")}
+                        >
+                            <FiUsers />
+                            <span>Founders</span>
+                        </button>
+                    )}
+                    {hasPermission('deals') && (
+                        <button
+                            className={`nav-item ${activeTab === "deals" ? "active" : ""}`}
+                            onClick={() => setActiveTab("deals")}
+                        >
+                            <FiDollarSign />
+                            <span>Deals & Equity</span>
+                        </button>
+                    )}
+                    {hasPermission('tasks') && (
+                        <button
+                            className={`nav-item ${activeTab === "tasks" ? "active" : ""}`}
+                            onClick={() => setActiveTab("tasks")}
+                        >
+                            <FiCheckSquare />
+                            <span>Tasks & Sprints</span>
+                        </button>
+                    )}
+                    {hasPermission('growth') && (
+                        <button
+                            className={`nav-item ${activeTab === "growth" ? "active" : ""}`}
+                            onClick={() => setActiveTab("growth")}
+                        >
+                            <FiTrendingUp />
+                            <span>Growth & Marketing</span>
+                        </button>
+                    )}
+                    {hasPermission('finance') && (
+                        <button
+                            className={`nav-item ${activeTab === "finance" ? "active" : ""}`}
+                            onClick={() => setActiveTab("finance")}
+                        >
+                            <FiCreditCard />
+                            <span>Finance</span>
+                        </button>
+                    )}
+                    {hasPermission('legal') && (
+                        <button
+                            className={`nav-item ${activeTab === "legal" ? "active" : ""}`}
+                            onClick={() => setActiveTab("legal")}
+                        >
+                            <FiFileText />
+                            <span>Legal & Compliance</span>
+                        </button>
+                    )}
+                    {hasPermission('documents') && (
+                        <button
+                            className={`nav-item ${activeTab === "documents" ? "active" : ""}`}
+                            onClick={() => setActiveTab("documents")}
+                        >
+                            <FiFolder />
+                            <span>Documents</span>
+                        </button>
+                    )}
+                    {hasPermission('crm') && (
+                        <button
+                            className={`nav-item ${activeTab === "crm" ? "active" : ""}`}
+                            onClick={() => setActiveTab("crm")}
+                        >
+                            <FiMessageSquare />
+                            <span>CRM & Outreach</span>
+                        </button>
+                    )}
+                    {hasPermission('support') && (
+                        <button
+                            className={`nav-item ${activeTab === "support" ? "active" : ""}`}
+                            onClick={() => setActiveTab("support")}
+                        >
+                            <FiHelpCircle />
+                            <span>Support & Tickets</span>
+                        </button>
+                    )}
+                    {hasPermission('reports') && (
+                        <button
+                            className={`nav-item ${activeTab === "reports" ? "active" : ""}`}
+                            onClick={() => setActiveTab("reports")}
+                        >
+                            <FiBarChart2 />
+                            <span>Reports & Analytics</span>
+                        </button>
+                    )}
+                    {hasPermission('automations') && (
+                        <button
+                            className={`nav-item ${activeTab === "automations" ? "active" : ""}`}
+                            onClick={() => setActiveTab("automations")}
+                        >
+                            <FiSettings />
+                            <span>Automations</span>
+                        </button>
+                    )}
+                    {hasPermission('users') && (
+                        <button
+                            className={`nav-item ${activeTab === "users" ? "active" : ""}`}
+                            onClick={() => setActiveTab("users")}
+                        >
+                            <FiUsers />
+                            <span>Users & Teams</span>
+                        </button>
+                    )}
+                    {hasPermission('settings') && (
+                        <button
+                            className={`nav-item ${activeTab === "settings" ? "active" : ""}`}
+                            onClick={() => setActiveTab("settings")}
+                        >
+                            <FiSettings />
+                            <span>Settings</span>
+                        </button>
+                    )}
                 </nav>
                 <div className="sidebar-footer">
                     <button className="logout-btn" onClick={handleLogout}>
