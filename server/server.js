@@ -13,18 +13,29 @@ const db = mongoose.connection;
 db.on("error", console.error.bind(console, "MongoDB connection error:"));
 db.once("open", () => {
     console.log("✅ Connected to adminDB");
-    // Create test admin users if they don't exist
+    
     createTestAdmins();
 });
 
-// Define Admin schema with permissions
+// Define Admin schema with permissions and login tracking
 const AdminSchema = new mongoose.Schema({
     username: { type: String, required: true, unique: true },
     password: { type: String, required: true },
     role: { type: String, required: true },
-    permissions: { type: [String], required: true }
+    permissions: { type: [String], required: true },
+    loginCount: { type: Number, default: 0 }
 });
 const Admin = mongoose.model("Admin", AdminSchema);
+
+// NEW: Define LoginHistory schema for tracking login timestamps
+const LoginHistorySchema = new mongoose.Schema({
+    adminId: { type: mongoose.Schema.Types.ObjectId, ref: 'Admin', required: true },
+    username: { type: String, required: true },
+    loginTime: { type: Date, default: Date.now },
+    ipAddress: { type: String, default: '' },
+    userAgent: { type: String, default: '' }
+});
+const LoginHistory = mongoose.model("LoginHistory", LoginHistorySchema);
 
 // Define UserData schema for storing user-specific data
 const UserDataSchema = new mongoose.Schema({
@@ -59,7 +70,7 @@ const UserDataSchema = new mongoose.Schema({
 });
 const UserData = mongoose.model("UserData", UserDataSchema);
 
-// NEW: Define Contact schema for storing contact form submissions
+// Define Contact schema for storing contact form submissions
 const ContactSchema = new mongoose.Schema({
     name: { type: String, required: true },
     email: { type: String, required: true },
@@ -78,43 +89,50 @@ async function createTestAdmins() {
                 username: "superadmin",
                 password: await bcrypt.hash("super123", 10),
                 role: "superAdmin",
-                permissions: ["dashboard", "ventures", "founders", "deals", "tasks", "growth", "finance", "legal", "documents", "crm", "support", "reports", "automations", "users", "settings"]
+                permissions: ["dashboard", "ventures", "founders", "deals", "tasks", "growth", "finance", "legal", "documents", "crm", "support", "reports", "automations", "users", "settings"],
+                loginCount: 0
             },
             {
                 username: "operations",
                 password: await bcrypt.hash("ops123", 10),
                 role: "operationsAdmin",
-                permissions: ["dashboard", "ventures", "founders", "tasks", "support", "reports"]
+                permissions: ["dashboard", "ventures", "founders", "tasks", "support", "reports"],
+                loginCount: 0
             },
             {
                 username: "venture",
                 password: await bcrypt.hash("venture123", 10),
                 role: "venturePartner",
-                permissions: ["dashboard", "ventures", "deals", "crm", "reports"]
+                permissions: ["dashboard", "ventures", "deals", "crm", "reports"],
+                loginCount: 0
             },
             {
                 username: "finance",
                 password: await bcrypt.hash("finance123", 10),
                 role: "financeAdmin",
-                permissions: ["dashboard", "finance", "documents", "reports"]
+                permissions: ["dashboard", "finance", "documents", "reports"],
+                loginCount: 0
             },
             {
                 username: "legal",
                 password: await bcrypt.hash("legal123", 10),
                 role: "legalAdmin",
-                permissions: ["dashboard", "legal", "documents", "reports"]
+                permissions: ["dashboard", "legal", "documents", "reports"],
+                loginCount: 0
             },
             {
                 username: "marketing",
                 password: await bcrypt.hash("market123", 10),
                 role: "growthMarketing",
-                permissions: ["dashboard", "growth", "reports"]
+                permissions: ["dashboard", "growth", "reports"],
+                loginCount: 0
             },
             {
                 username: "techlead",
                 password: await bcrypt.hash("tech123", 10),
                 role: "techLead",
-                permissions: ["dashboard", "tasks", "automations", "reports"]
+                permissions: ["dashboard", "tasks", "automations", "reports"],
+                loginCount: 0
             }
         ];
         for (const adminData of adminUsers) {
@@ -132,7 +150,7 @@ async function createTestAdmins() {
     }
 }
 
-// Login route
+// Login route with login count and history tracking
 app.post("/login", async (req, res) => {
     const { username, password } = req.body;
     try {
@@ -145,12 +163,27 @@ app.post("/login", async (req, res) => {
         }
         const isMatch = await bcrypt.compare(password, admin.password);
         if (isMatch) {
+            // Increment login count
+            admin.loginCount += 1;
+            await admin.save();
+            
+            // Create login history record
+            const loginHistory = new LoginHistory({
+                adminId: admin._id,
+                username: admin.username,
+                ipAddress: req.ip || req.connection.remoteAddress,
+                userAgent: req.headers['user-agent'] || ''
+            });
+            await loginHistory.save();
+            
             return res.json({
                 success: true,
                 message: "Login successful",
                 username: admin.username,
                 role: admin.role,
-                permissions: admin.permissions
+                permissions: admin.permissions,
+                loginCount: admin.loginCount,
+                lastLogin: loginHistory.loginTime // Include last login time
             });
         } else {
             return res.json({
@@ -243,11 +276,10 @@ app.post("/api/user-data/:userId", async (req, res) => {
     }
 });
 
-// NEW: Contact form submission route
+// Contact form submission route
 app.post("/api/contact", async (req, res) => {
     try {
         const { name, email, startup, message } = req.body;
-
         // Create a new contact document
         const newContact = new Contact({
             name,
@@ -255,10 +287,8 @@ app.post("/api/contact", async (req, res) => {
             startup: startup || "",
             message
         });
-
         // Save to database
         await newContact.save();
-
         // Return success response
         res.status(201).json({
             success: true,
@@ -274,7 +304,7 @@ app.post("/api/contact", async (req, res) => {
     }
 });
 
-// NEW: Get all contact submissions (admin route)
+// Get all contact submissions (admin route)
 app.get("/api/contact", async (req, res) => {
     try {
         const contacts = await Contact.find().sort({ date: -1 });
@@ -285,25 +315,82 @@ app.get("/api/contact", async (req, res) => {
     }
 });
 
-// NEW: Update contact status (admin route)
+// Update contact status (admin route)
 app.put("/api/contact/:id", async (req, res) => {
     try {
         const { id } = req.params;
         const { status } = req.body;
-
         const updatedContact = await Contact.findByIdAndUpdate(
             id,
             { status },
             { new: true }
         );
-
         if (!updatedContact) {
             return res.status(404).json({ error: "Contact not found" });
         }
-
         res.json(updatedContact);
     } catch (err) {
         console.error("Error updating contact status:", err);
+        res.status(500).json({ error: "Server error" });
+    }
+});
+
+// Get user login statistics
+app.get("/api/admin/login-stats", async (req, res) => {
+    try {
+        // Get all admins with their login counts
+        const admins = await Admin.find({}, { username: 1, role: 1, loginCount: 1 });
+        
+        // Calculate total logins across all users
+        const totalLogins = admins.reduce((sum, admin) => sum + admin.loginCount, 0);
+        
+        res.json({
+            totalLogins,
+            users: admins.map(admin => ({
+                username: admin.username,
+                role: admin.role,
+                loginCount: admin.loginCount
+            }))
+        });
+    } catch (err) {
+        console.error("Error fetching login stats:", err);
+        res.status(500).json({ error: "Server error" });
+    }
+});
+
+// NEW: Get detailed login history for all admins
+app.get("/api/admin/login-history", async (req, res) => {
+    try {
+        // Get all login history records, sorted by most recent first
+        const history = await LoginHistory.find()
+            .sort({ loginTime: -1 })
+            .populate('adminId', 'username role')
+            .limit(100); // Limit to last 100 logins
+        
+        res.json(history);
+    } catch (err) {
+        console.error("Error fetching login history:", err);
+        res.status(500).json({ error: "Server error" });
+    }
+});
+
+// NEW: Get login history for a specific admin
+app.get("/api/admin/login-history/:username", async (req, res) => {
+    try {
+        const { username } = req.params;
+        
+        // Get login history for the specified admin
+        const history = await LoginHistory.find({ username })
+            .sort({ loginTime: -1 })
+            .limit(50); // Limit to last 50 logins for this user
+        
+        if (history.length === 0) {
+            return res.status(404).json({ message: "No login history found for this user" });
+        }
+        
+        res.json(history);
+    } catch (err) {
+        console.error("Error fetching user login history:", err);
         res.status(500).json({ error: "Server error" });
     }
 });
