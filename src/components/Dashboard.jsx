@@ -112,6 +112,10 @@ export default function Dashboard() {
         settings: "branding"
     });
     
+    // New state for billing and audit logs
+    const [billingHistory, setBillingHistory] = useState([]);
+    const [auditLogs, setAuditLogs] = useState([]);
+    
     // Counter for unique IDs
     const [idCounter, setIdCounter] = useState(1);
     
@@ -144,8 +148,16 @@ export default function Dashboard() {
         settings,
         notifications,
         events,
-        activeSubTab
+        activeSubTab,
+        billingHistory,
+        auditLogs
     };
+
+    // Apply theme colors to CSS variables
+    useEffect(() => {
+        document.documentElement.style.setProperty('--primary-color', settings.primaryColor);
+        document.documentElement.style.setProperty('--secondary-color', settings.secondaryColor);
+    }, [settings.primaryColor, settings.secondaryColor]);
 
     // Function to check if user has permission for a section
     const hasPermission = (section) => {
@@ -196,7 +208,7 @@ export default function Dashboard() {
     }, [kpiData, approvals, ventures, founders, tasks, termSheets, capTable, equityLedger,
         vestingSchedules, contentCalendar, assetLibrary, campaigns, invoices, revenueShare, profitLoss,
         contracts, complianceCalendar, documents, investors, tickets, reports, automations, teams,
-        settings, notifications, events, activeSubTab, saveUserData]);
+        settings, notifications, events, activeSubTab, billingHistory, auditLogs, saveUserData]);
 
     // Function to fetch user data from backend
     const fetchUserData = async () => {
@@ -245,6 +257,9 @@ export default function Dashboard() {
                 crm: "investors",
                 settings: "branding"
             });
+            setBillingHistory(userData.billingHistory || []);
+            setAuditLogs(userData.auditLogs || []);
+            
             // Find the highest ID to set the counter
             const allItems = [
                 ...userData.kpiData || [],
@@ -269,7 +284,9 @@ export default function Dashboard() {
                 ...userData.teams || [],
                 ...(userData.settings?.integrations || []),
                 ...userData.notifications || [],
-                ...userData.events || []
+                ...userData.events || [],
+                ...userData.billingHistory || [],
+                ...userData.auditLogs || []
             ];
             const maxId = allItems.reduce((max, item) => {
                 const itemId = parseInt(item.id);
@@ -299,6 +316,58 @@ export default function Dashboard() {
         navigate("/");
     };
 
+    // Function to handle downloading items
+    const handleDownload = (item, type) => {
+        let content = '';
+        let filename = '';
+        let mimeType = 'text/plain';
+
+        switch (type) {
+            case 'document':
+                content = `Document: ${item.name}\nCategory: ${item.category}\nAccess Level: ${item.accessLevel}`;
+                filename = `${item.name}.txt`;
+                break;
+            case 'contract':
+                content = `Contract: ${item.title}\nParty: ${item.party}\nType: ${item.type}\nStart Date: ${item.startDate}\nEnd Date: ${item.endDate}`;
+                filename = `${item.title}.txt`;
+                break;
+            case 'invoice':
+                content = `Invoice #: ${item.number}\nClient: ${item.client}\nAmount: ${item.amount}\nDue Date: ${item.dueDate}\nStatus: ${item.status}`;
+                filename = `Invoice_${item.number}.txt`;
+                break;
+            case 'termSheet':
+                content = `Term Sheet: ${item.title}\nCompany: ${item.company}\nAmount: ${item.amount}\nStatus: ${item.status}`;
+                filename = `TermSheet_${item.title}.txt`;
+                break;
+            case 'report':
+                content = `Report: ${item.title}\nGenerated: ${new Date().toLocaleDateString()}\n\nThis is a sample report for ${item.title}.`;
+                filename = `Report_${item.title}.txt`;
+                break;
+            case 'billing':
+                content = `Date: ${item.date}\nDescription: ${item.description}\nAmount: ${item.amount}\nStatus: ${item.status}`;
+                filename = `Billing_${item.date.replace(/\//g, '-')}.txt`;
+                break;
+            case 'auditLog':
+                content = `Date & Time: ${item.dateTime}\nUser: ${item.user}\nAction: ${item.action}\nDetails: ${item.details}\nIP Address: ${item.ip}`;
+                filename = `AuditLog_${item.dateTime.replace(/[:/\s]/g, '-')}.txt`;
+                break;
+            default:
+                content = JSON.stringify(item, null, 2);
+                filename = `${type}_${item.id || 'data'}.json`;
+                mimeType = 'application/json';
+        }
+
+        const blob = new Blob([content], { type: mimeType });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    };
+
     const handleAddItem = (type, data = {}) => {
         // Check if user has permission to add items in this section
         const section = type === 'event' || type === 'approval' || type === 'kpi' ? 'dashboard' :
@@ -314,7 +383,8 @@ export default function Dashboard() {
                         type === 'ticket' ? 'support' :
                         type === 'automation' ? 'automations' :
                         type === 'user' ? 'users' :
-                        type === 'setting' ? 'settings' : '';
+                        type === 'billing' ? 'settings' :
+                        type === 'auditLog' ? 'settings' : '';
         
         if (!hasEditPermission(section)) {
             alert("You don't have permission to add items in this section");
@@ -341,7 +411,7 @@ export default function Dashboard() {
                         type === 'ticket' ? 'support' :
                         type === 'automation' ? 'automations' :
                         type === 'user' ? 'users' :
-                        type === 'setting' ? 'settings' : '';
+                        type === 'billing' || type === 'auditLog' ? 'settings' : '';
         
         if (!hasEditPermission(section)) {
             alert("You don't have permission to edit items in this section");
@@ -368,7 +438,7 @@ export default function Dashboard() {
                         type === 'ticket' ? 'support' :
                         type === 'automation' ? 'automations' :
                         type === 'user' ? 'users' :
-                        type === 'setting' ? 'settings' : '';
+                        type === 'billing' || type === 'auditLog' ? 'settings' : '';
         
         if (!hasEditPermission(section)) {
             alert("You don't have permission to delete items in this section");
@@ -444,6 +514,12 @@ export default function Dashboard() {
                     break;
                 case 'approval':
                     setApprovals(approvals.filter(approval => approval.id !== id));
+                    break;
+                case 'billing':
+                    setBillingHistory(billingHistory.filter((_, index) => index !== id));
+                    break;
+                case 'auditLog':
+                    setAuditLogs(auditLogs.filter((_, index) => index !== id));
                     break;
                 default:
                     alert(`Deleted ${type} with ID: ${id}`);
@@ -524,7 +600,7 @@ export default function Dashboard() {
                         newItem.type === 'ticket' ? 'support' :
                         newItem.type === 'automation' ? 'automations' :
                         newItem.type === 'user' ? 'users' :
-                        newItem.type === 'setting' ? 'settings' : '';
+                        newItem.type === 'setting' || newItem.type === 'billing' || newItem.type === 'auditLog' ? 'settings' : '';
         
         if (!hasEditPermission(section)) {
             alert("You don't have permission to submit this form");
@@ -778,6 +854,35 @@ export default function Dashboard() {
                     }
                 }
                 break;
+            case 'billing':
+                const newBilling = {
+                    id: editingItem ? editingItem.id : generateUniqueId(),
+                    date: data.date,
+                    description: data.description,
+                    amount: data.amount,
+                    status: data.status
+                };
+                if (editingItem) {
+                    setBillingHistory(billingHistory.map(billing => billing.id === editingItem.id ? newBilling : billing));
+                } else {
+                    setBillingHistory([...billingHistory, newBilling]);
+                }
+                break;
+            case 'auditLog':
+                const newAuditLog = {
+                    id: editingItem ? editingItem.id : generateUniqueId(),
+                    dateTime: data.dateTime,
+                    user: data.user,
+                    action: data.action,
+                    details: data.details,
+                    ip: data.ip
+                };
+                if (editingItem) {
+                    setAuditLogs(auditLogs.map(log => log.id === editingItem.id ? newAuditLog : log));
+                } else {
+                    setAuditLogs([...auditLogs, newAuditLog]);
+                }
+                break;
             case 'approval':
                 const newApproval = {
                     id: editingItem ? editingItem.id : generateUniqueId(),
@@ -989,7 +1094,7 @@ export default function Dashboard() {
                             <button className="btn-icon"><FiChevronRight /></button>
                         </div>
                     </div>
-                    <div className="calendar-grid">
+                    <div className="calendar-grid compact">
                         {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
                             <div key={day} className="calendar-day-header">{day}</div>
                         ))}
@@ -1327,8 +1432,8 @@ export default function Dashboard() {
                                                             <button className="btn-icon" onClick={() => handleDeleteItem(sheet.id, "termSheet")}>
                                                                 <FiTrash2 />
                                                             </button>
-                                                            <button className="btn-icon">
-                                                                <FiEye />
+                                                            <button className="btn-icon" onClick={() => handleDownload(sheet, 'termSheet')}>
+                                                                <FiDownload />
                                                             </button>
                                                         </div>
                                                     )}
@@ -1380,6 +1485,9 @@ export default function Dashboard() {
                                                             <button className="btn-icon" onClick={() => handleDeleteItem(index, "capTable")}>
                                                                 <FiTrash2 />
                                                             </button>
+                                                            <button className="btn-icon" onClick={() => handleDownload(entry, 'capTable')}>
+                                                                <FiDownload />
+                                                            </button>
                                                         </div>
                                                     )}
                                                 </td>
@@ -1430,6 +1538,9 @@ export default function Dashboard() {
                                                             <button className="btn-icon" onClick={() => handleDeleteItem(index, "equityLedger")}>
                                                                 <FiTrash2 />
                                                             </button>
+                                                            <button className="btn-icon" onClick={() => handleDownload(entry, 'equityLedger')}>
+                                                                <FiDownload />
+                                                            </button>
                                                         </div>
                                                     )}
                                                 </td>
@@ -1479,6 +1590,9 @@ export default function Dashboard() {
                                                             </button>
                                                             <button className="btn-icon" onClick={() => handleDeleteItem(index, "vestingSchedule")}>
                                                                 <FiTrash2 />
+                                                            </button>
+                                                            <button className="btn-icon" onClick={() => handleDownload(schedule, 'vestingSchedule')}>
+                                                                <FiDownload />
                                                             </button>
                                                         </div>
                                                     )}
@@ -1573,6 +1687,9 @@ export default function Dashboard() {
                                                         <button className="btn-icon" onClick={() => handleDeleteItem(content.id, "content")}>
                                                             <FiTrash2 />
                                                         </button>
+                                                        <button className="btn-icon" onClick={() => handleDownload(content, 'content')}>
+                                                            <FiDownload />
+                                                        </button>
                                                     </div>
                                                 )}
                                             </div>
@@ -1612,7 +1729,7 @@ export default function Dashboard() {
                                                     <button className="btn-icon" onClick={() => handleDeleteItem(index, "asset")}>
                                                         <FiTrash2 />
                                                     </button>
-                                                    <button className="btn-icon">
+                                                    <button className="btn-icon" onClick={() => handleDownload(asset, 'asset')}>
                                                         <FiDownload />
                                                     </button>
                                                 </div>
@@ -1670,8 +1787,8 @@ export default function Dashboard() {
                                                             <button className="btn-icon" onClick={() => handleDeleteItem(index, "campaign")}>
                                                                 <FiTrash2 />
                                                             </button>
-                                                            <button className="btn-icon">
-                                                                <FiBarChart2 />
+                                                            <button className="btn-icon" onClick={() => handleDownload(campaign, 'campaign')}>
+                                                                <FiDownload />
                                                             </button>
                                                         </div>
                                                     )}
@@ -1763,7 +1880,7 @@ export default function Dashboard() {
                                                             <button className="btn-icon" onClick={() => handleDeleteItem(index, "invoice")}>
                                                                 <FiTrash2 />
                                                             </button>
-                                                            <button className="btn-icon">
+                                                            <button className="btn-icon" onClick={() => handleDownload(invoice, 'invoice')}>
                                                                 <FiDownload />
                                                             </button>
                                                         </div>
@@ -1941,7 +2058,7 @@ export default function Dashboard() {
                                                             <button className="btn-icon" onClick={() => handleDeleteItem(index, "contract")}>
                                                                 <FiTrash2 />
                                                             </button>
-                                                            <button className="btn-icon">
+                                                            <button className="btn-icon" onClick={() => handleDownload(contract, 'contract')}>
                                                                 <FiDownload />
                                                             </button>
                                                         </div>
@@ -2000,6 +2117,9 @@ export default function Dashboard() {
                                                         <button className="btn-icon" onClick={() => handleDeleteItem(index, "complianceEvent")}>
                                                             <FiTrash2 />
                                                         </button>
+                                                        <button className="btn-icon" onClick={() => handleDownload(event, 'complianceEvent')}>
+                                                            <FiDownload />
+                                                        </button>
                                                     </div>
                                                 )}
                                             </div>
@@ -2055,7 +2175,7 @@ export default function Dashboard() {
                                                 <button className="btn-icon" onClick={() => handleDeleteItem(index, "document")}>
                                                     <FiTrash2 />
                                                 </button>
-                                                <button className="btn-icon">
+                                                <button className="btn-icon" onClick={() => handleDownload(doc, 'document')}>
                                                     <FiDownload />
                                                 </button>
                                             </div>
@@ -2159,6 +2279,9 @@ export default function Dashboard() {
                                                                 <button className="btn-icon">
                                                                     <FiMail />
                                                                 </button>
+                                                                <button className="btn-icon" onClick={() => handleDownload(investor, 'investor')}>
+                                                                    <FiDownload />
+                                                                </button>
                                                             </div>
                                                         )}
                                                     </td>
@@ -2216,6 +2339,9 @@ export default function Dashboard() {
                                                                 <button className="btn-icon">
                                                                     <FiMail />
                                                                 </button>
+                                                                <button className="btn-icon" onClick={() => handleDownload(mentor, 'mentor')}>
+                                                                    <FiDownload />
+                                                                </button>
                                                             </div>
                                                         )}
                                                     </td>
@@ -2272,6 +2398,9 @@ export default function Dashboard() {
                                                                 </button>
                                                                 <button className="btn-icon">
                                                                     <FiMail />
+                                                                </button>
+                                                                <button className="btn-icon" onClick={() => handleDownload(partner, 'partner')}>
+                                                                    <FiDownload />
                                                                 </button>
                                                             </div>
                                                         )}
@@ -2333,6 +2462,9 @@ export default function Dashboard() {
                                                             </button>
                                                             <button className="btn-icon">
                                                                 <FiBarChart2 />
+                                                            </button>
+                                                            <button className="btn-icon" onClick={() => handleDownload(campaign, 'campaign')}>
+                                                                <FiDownload />
                                                             </button>
                                                         </div>
                                                     )}
@@ -2425,6 +2557,9 @@ export default function Dashboard() {
                                         <button className="btn-icon">
                                             <FiMail />
                                         </button>
+                                        <button className="btn-icon" onClick={() => handleDownload(ticket, 'ticket')}>
+                                            <FiDownload />
+                                        </button>
                                     </div>
                                 )}
                             </div>
@@ -2458,7 +2593,7 @@ export default function Dashboard() {
                 <div className="report-card">
                     <div className="report-header">
                         <h3>Venture Performance</h3>
-                        <button className="btn-icon">
+                        <button className="btn-icon" onClick={() => handleDownload({title: 'Venture Performance'}, 'report')}>
                             <FiDownload />
                         </button>
                     </div>
@@ -2474,7 +2609,7 @@ export default function Dashboard() {
                 <div className="report-card">
                     <div className="report-header">
                         <h3>Cohort Analysis</h3>
-                        <button className="btn-icon">
+                        <button className="btn-icon" onClick={() => handleDownload({title: 'Cohort Analysis'}, 'report')}>
                             <FiDownload />
                         </button>
                     </div>
@@ -2490,7 +2625,7 @@ export default function Dashboard() {
                 <div className="report-card">
                     <div className="report-header">
                         <h3>CAC/LTV Tracking</h3>
-                        <button className="btn-icon">
+                        <button className="btn-icon" onClick={() => handleDownload({title: 'CAC/LTV Tracking'}, 'report')}>
                             <FiDownload />
                         </button>
                     </div>
@@ -2506,7 +2641,7 @@ export default function Dashboard() {
                 <div className="report-card">
                     <div className="report-header">
                         <h3>Funnel Reports</h3>
-                        <button className="btn-icon">
+                        <button className="btn-icon" onClick={() => handleDownload({title: 'Funnel Reports'}, 'report')}>
                             <FiDownload />
                         </button>
                     </div>
@@ -2572,6 +2707,9 @@ export default function Dashboard() {
                                     </button>
                                     <button className="btn-icon">
                                         <FiPlay />
+                                    </button>
+                                    <button className="btn-icon" onClick={() => handleDownload(automation, 'automation')}>
+                                        <FiDownload />
                                     </button>
                                 </div>
                             )}
@@ -2661,6 +2799,9 @@ export default function Dashboard() {
                                                         <button className="btn-icon" onClick={() => handleDeleteItem(index, "user")}>
                                                             <FiTrash2 />
                                                         </button>
+                                                        <button className="btn-icon" onClick={() => handleDownload(user, 'user')}>
+                                                            <FiDownload />
+                                                        </button>
                                                     </div>
                                                 )}
                                             </td>
@@ -2731,21 +2872,42 @@ export default function Dashboard() {
                                     </div>
                                     <div className="form-group">
                                         <label>Primary Color</label>
-                                        <input
-                                            type="color"
-                                            name="primaryColor"
-                                            defaultValue={settings.primaryColor || '#001f3f'}
-                                            required
-                                        />
+                                        <div className="color-picker">
+                                            <input
+                                                type="color"
+                                                name="primaryColor"
+                                                defaultValue={settings.primaryColor || '#001f3f'}
+                                                required
+                                            />
+                                            <span>{settings.primaryColor || '#001f3f'}</span>
+                                        </div>
                                     </div>
                                     <div className="form-group">
                                         <label>Secondary Color</label>
-                                        <input
-                                            type="color"
-                                            name="secondaryColor"
-                                            defaultValue={settings.secondaryColor || '#ff851b'}
-                                            required
-                                        />
+                                        <div className="color-picker">
+                                            <input
+                                                type="color"
+                                                name="secondaryColor"
+                                                defaultValue={settings.secondaryColor || '#ff851b'}
+                                                required
+                                            />
+                                            <span>{settings.secondaryColor || '#ff851b'}</span>
+                                        </div>
+                                    </div>
+                                    <div className="form-group">
+                                        <label>Preview</label>
+                                        <div className="branding-preview" style={{ 
+                                            backgroundColor: settings.primaryColor || '#001f3f',
+                                            color: '#ffffff'
+                                        }}>
+                                            <h4 style={{ color: settings.secondaryColor || '#ff851b' }}>
+                                                {settings.companyName || 'Ecstasy Ventures'}
+                                            </h4>
+                                            <p>This is a preview of your branding colors</p>
+                                            <button style={{ backgroundColor: settings.secondaryColor || '#ff851b' }}>
+                                                Sample Button
+                                            </button>
+                                        </div>
                                     </div>
                                     <button type="submit" className="btn-primary">
                                         Save Changes
@@ -2785,6 +2947,9 @@ export default function Dashboard() {
                                                     </button>
                                                     <button className="btn-icon" onClick={() => handleDeleteItem(index, "setting")}>
                                                         <FiTrash2 />
+                                                    </button>
+                                                    <button className="btn-icon" onClick={() => handleDownload(integration, 'integration')}>
+                                                        <FiDownload />
                                                     </button>
                                                 </div>
                                             )}
@@ -2839,11 +3004,19 @@ export default function Dashboard() {
                     )}
                     {activeSubTabId === "billing" && (
                         <div className="billing-settings">
+                            <div className="settings-header">
+                                <h3>Billing Settings</h3>
+                                {hasEditPermission('settings') && (
+                                    <button className="btn-primary" onClick={() => handleAddItem("billing")}>
+                                        <FiPlus /> Add Billing Entry
+                                    </button>
+                                )}
+                            </div>
                             <div className="billing-overview">
-                                <h3>Billing Overview</h3>
+                                <h3>Current Plan</h3>
                                 <div className="billing-cards">
                                     <div className="billing-card">
-                                        <h4>Current Plan</h4>
+                                        <h4>Plan Type</h4>
                                         <p>Professional</p>
                                         <button className="btn-secondary">Upgrade Plan</button>
                                     </div>
@@ -2860,120 +3033,150 @@ export default function Dashboard() {
                                 </div>
                             </div>
                             <div className="billing-history">
-                                <h3>Billing History</h3>
-                                <div className="data-table">
-                                    <table>
-                                        <thead>
-                                        <tr>
-                                            <th>Date</th>
-                                            <th>Description</th>
-                                            <th>Amount</th>
-                                            <th>Status</th>
-                                            <th>Actions</th>
-                                        </tr>
-                                        </thead>
-                                        <tbody>
-                                        <tr>
-                                            <td>Jun 15, 2023</td>
-                                            <td>Monthly Subscription</td>
-                                            <td>$99.00</td>
-                                            <td><span className="status-badge paid">Paid</span></td>
-                                            <td>
-                                                <div className="table-actions">
-                                                    <button className="btn-icon">
-                                                        <FiDownload />
-                                                    </button>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td>May 15, 2023</td>
-                                            <td>Monthly Subscription</td>
-                                            <td>$99.00</td>
-                                            <td><span className="status-badge paid">Paid</span></td>
-                                            <td>
-                                                <div className="table-actions">
-                                                    <button className="btn-icon">
-                                                        <FiDownload />
-                                                    </button>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                        </tbody>
-                                    </table>
+                                <div className="section-header">
+                                    <h3>Billing History</h3>
                                 </div>
+                                {billingHistory.length === 0 ? (
+                                    <div className="empty-state">
+                                        <p>No billing history available</p>
+                                        {hasEditPermission('settings') && (
+                                            <button className="btn-primary" onClick={() => handleAddItem("billing")}>
+                                                Add Billing Entry
+                                            </button>
+                                        )}
+                                    </div>
+                                ) : (
+                                    <div className="data-table">
+                                        <table>
+                                            <thead>
+                                            <tr>
+                                                <th>Date</th>
+                                                <th>Description</th>
+                                                <th>Amount</th>
+                                                <th>Status</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                            </thead>
+                                            <tbody>
+                                                {billingHistory.map((billing, index) => (
+                                                    <tr key={`${billing.date}-${index}`}>
+                                                        <td>{billing.date}</td>
+                                                        <td>{billing.description}</td>
+                                                        <td>{billing.amount}</td>
+                                                        <td><span className={`status-badge ${billing.status.toLowerCase()}`}>{billing.status}</span></td>
+                                                        <td>
+                                                            {hasEditPermission('settings') && (
+                                                                <div className="table-actions">
+                                                                    <button className="btn-icon" onClick={() => handleEditItem(billing, "billing")}>
+                                                                        <FiEdit />
+                                                                    </button>
+                                                                    <button className="btn-icon" onClick={() => handleDeleteItem(index, "billing")}>
+                                                                        <FiTrash2 />
+                                                                    </button>
+                                                                    <button className="btn-icon" onClick={() => handleDownload(billing, 'billing')}>
+                                                                        <FiDownload />
+                                                                    </button>
+                                                                </div>
+                                                            )}
+                                                        </td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                )}
                             </div>
                         </div>
                     )}
                     {activeSubTabId === "auditLogs" && (
                         <div className="audit-logs">
-                            <div className="logs-header">
+                            <div className="settings-header">
                                 <h3>Audit Logs</h3>
-                                <div className="logs-filters">
-                                    <div className="filter-group">
-                                        <label>Date Range:</label>
-                                        <select>
-                                            <option>Last 7 days</option>
-                                            <option>Last 30 days</option>
-                                            <option>Last 90 days</option>
-                                        </select>
-                                    </div>
-                                    <div className="filter-group">
-                                        <label>User:</label>
-                                        <select>
-                                            <option>All Users</option>
-                                            <option>You</option>
-                                        </select>
-                                    </div>
-                                    <div className="filter-group">
-                                        <label>Action:</label>
-                                        <select>
-                                            <option>All Actions</option>
-                                            <option>Login</option>
-                                            <option>Create</option>
-                                            <option>Update</option>
-                                            <option>Delete</option>
-                                        </select>
-                                    </div>
+                                {hasEditPermission('settings') && (
+                                    <button className="btn-primary" onClick={() => handleAddItem("auditLog")}>
+                                        <FiPlus /> Add Audit Log
+                                    </button>
+                                )}
+                            </div>
+                            <div className="logs-filters">
+                                <div className="filter-group">
+                                    <label>Date Range:</label>
+                                    <select>
+                                        <option>Last 7 days</option>
+                                        <option>Last 30 days</option>
+                                        <option>Last 90 days</option>
+                                    </select>
+                                </div>
+                                <div className="filter-group">
+                                    <label>User:</label>
+                                    <select>
+                                        <option>All Users</option>
+                                        <option>You</option>
+                                    </select>
+                                </div>
+                                <div className="filter-group">
+                                    <label>Action:</label>
+                                    <select>
+                                        <option>All Actions</option>
+                                        <option>Login</option>
+                                        <option>Create</option>
+                                        <option>Update</option>
+                                        <option>Delete</option>
+                                    </select>
                                 </div>
                             </div>
                             <div className="logs-list">
-                                <div className="data-table">
-                                    <table>
-                                        <thead>
-                                        <tr>
-                                            <th>Date & Time</th>
-                                            <th>User</th>
-                                            <th>Action</th>
-                                            <th>Details</th>
-                                            <th>IP Address</th>
-                                        </tr>
-                                        </thead>
-                                        <tbody>
-                                        <tr>
-                                            <td>Jun 20, 2023 10:30 AM</td>
-                                            <td>admin@example.com</td>
-                                            <td>Login</td>
-                                            <td>User logged in successfully</td>
-                                            <td>192.168.1.1</td>
-                                        </tr>
-                                        <tr>
-                                            <td>Jun 20, 2023 10:15 AM</td>
-                                            <td>admin@example.com</td>
-                                            <td>Create</td>
-                                            <td>Created new venture "Tech Startup"</td>
-                                            <td>192.168.1.1</td>
-                                        </tr>
-                                        <tr>
-                                            <td>Jun 19, 2023 4:45 PM</td>
-                                            <td>admin@example.com</td>
-                                            <td>Update</td>
-                                            <td>Updated settings for branding</td>
-                                            <td>192.168.1.1</td>
-                                        </tr>
-                                        </tbody>
-                                    </table>
-                                </div>
+                                {auditLogs.length === 0 ? (
+                                    <div className="empty-state">
+                                        <p>No audit logs available</p>
+                                        {hasEditPermission('settings') && (
+                                            <button className="btn-primary" onClick={() => handleAddItem("auditLog")}>
+                                                Add Audit Log
+                                            </button>
+                                        )}
+                                    </div>
+                                ) : (
+                                    <div className="data-table">
+                                        <table>
+                                            <thead>
+                                            <tr>
+                                                <th>Date & Time</th>
+                                                <th>User</th>
+                                                <th>Action</th>
+                                                <th>Details</th>
+                                                <th>IP Address</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                            </thead>
+                                            <tbody>
+                                                {auditLogs.map((log, index) => (
+                                                    <tr key={`${log.dateTime}-${index}`}>
+                                                        <td>{log.dateTime}</td>
+                                                        <td>{log.user}</td>
+                                                        <td>{log.action}</td>
+                                                        <td>{log.details}</td>
+                                                        <td>{log.ip}</td>
+                                                        <td>
+                                                            {hasEditPermission('settings') && (
+                                                                <div className="table-actions">
+                                                                    <button className="btn-icon" onClick={() => handleEditItem(log, "auditLog")}>
+                                                                        <FiEdit />
+                                                                    </button>
+                                                                    <button className="btn-icon" onClick={() => handleDeleteItem(index, "auditLog")}>
+                                                                        <FiTrash2 />
+                                                                    </button>
+                                                                    <button className="btn-icon" onClick={() => handleDownload(log, 'auditLog')}>
+                                                                        <FiDownload />
+                                                                    </button>
+                                                                </div>
+                                                            )}
+                                                        </td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                )}
                             </div>
                         </div>
                     )}
@@ -2995,7 +3198,6 @@ export default function Dashboard() {
                 </div>
             );
         }
-
         switch (activeTab) {
             case "dashboard":
                 return renderDashboardHome();
@@ -3038,7 +3240,7 @@ export default function Dashboard() {
                 <div className="sidebar-header">
                     <div className="logo">
                         <img src="/logo.jpg" alt="Ecstasy Ventures" />
-                        <span>Ecstasy Ventures</span>
+                        <span>{settings.companyName}</span>
                     </div>
                     <p>Admin Portal</p>
                 </div>
@@ -4015,21 +4217,27 @@ export default function Dashboard() {
                                             </div>
                                             <div className="form-group">
                                                 <label>Primary Color</label>
-                                                <input
-                                                    type="color"
-                                                    name="primaryColor"
-                                                    defaultValue={settings.primaryColor || '#001f3f'}
-                                                    required
-                                                />
+                                                <div className="color-picker">
+                                                    <input
+                                                        type="color"
+                                                        name="primaryColor"
+                                                        defaultValue={settings.primaryColor || '#001f3f'}
+                                                        required
+                                                    />
+                                                    <span>{settings.primaryColor || '#001f3f'}</span>
+                                                </div>
                                             </div>
                                             <div className="form-group">
                                                 <label>Secondary Color</label>
-                                                <input
-                                                    type="color"
-                                                    name="secondaryColor"
-                                                    defaultValue={settings.secondaryColor || '#ff851b'}
-                                                    required
-                                                />
+                                                <div className="color-picker">
+                                                    <input
+                                                        type="color"
+                                                        name="secondaryColor"
+                                                        defaultValue={settings.secondaryColor || '#ff851b'}
+                                                        required
+                                                    />
+                                                    <span>{settings.secondaryColor || '#ff851b'}</span>
+                                                </div>
                                             </div>
                                         </>
                                     )}
@@ -4066,6 +4274,109 @@ export default function Dashboard() {
                                             </div>
                                         </>
                                     )}
+                                </>
+                            )}
+                            {newItem.type === "billing" && (
+                                <>
+                                    <div className="form-group">
+                                        <label>Date</label>
+                                        <input
+                                            type="date"
+                                            name="date"
+                                            defaultValue={editingItem ? editingItem.date : ''}
+                                            required
+                                        />
+                                    </div>
+                                    <div className="form-group">
+                                        <label>Description</label>
+                                        <input
+                                            type="text"
+                                            name="description"
+                                            defaultValue={editingItem ? editingItem.description : ''}
+                                            placeholder="Enter description"
+                                            required
+                                        />
+                                    </div>
+                                    <div className="form-group">
+                                        <label>Amount</label>
+                                        <input
+                                            type="text"
+                                            name="amount"
+                                            defaultValue={editingItem ? editingItem.amount : ''}
+                                            placeholder="Enter amount"
+                                            required
+                                        />
+                                    </div>
+                                    <div className="form-group">
+                                        <label>Status</label>
+                                        <select
+                                            name="status"
+                                            defaultValue={editingItem ? editingItem.status : ''}
+                                            required
+                                        >
+                                            <option value="">Select status</option>
+                                            <option value="Paid">Paid</option>
+                                            <option value="Pending">Pending</option>
+                                            <option value="Failed">Failed</option>
+                                        </select>
+                                    </div>
+                                </>
+                            )}
+                            {newItem.type === "auditLog" && (
+                                <>
+                                    <div className="form-group">
+                                        <label>Date & Time</label>
+                                        <input
+                                            type="datetime-local"
+                                            name="dateTime"
+                                            defaultValue={editingItem ? editingItem.dateTime : ''}
+                                            required
+                                        />
+                                    </div>
+                                    <div className="form-group">
+                                        <label>User</label>
+                                        <input
+                                            type="text"
+                                            name="user"
+                                            defaultValue={editingItem ? editingItem.user : ''}
+                                            placeholder="Enter user"
+                                            required
+                                        />
+                                    </div>
+                                    <div className="form-group">
+                                        <label>Action</label>
+                                        <select
+                                            name="action"
+                                            defaultValue={editingItem ? editingItem.action : ''}
+                                            required
+                                        >
+                                            <option value="">Select action</option>
+                                            <option value="Login">Login</option>
+                                            <option value="Logout">Logout</option>
+                                            <option value="Create">Create</option>
+                                            <option value="Update">Update</option>
+                                            <option value="Delete">Delete</option>
+                                        </select>
+                                    </div>
+                                    <div className="form-group">
+                                        <label>Details</label>
+                                        <textarea
+                                            name="details"
+                                            defaultValue={editingItem ? editingItem.details : ''}
+                                            placeholder="Enter details"
+                                            required
+                                        ></textarea>
+                                    </div>
+                                    <div className="form-group">
+                                        <label>IP Address</label>
+                                        <input
+                                            type="text"
+                                            name="ip"
+                                            defaultValue={editingItem ? editingItem.ip : ''}
+                                            placeholder="Enter IP address"
+                                            required
+                                        />
+                                    </div>
                                 </>
                             )}
                             {newItem.type === "approval" && (
@@ -4114,7 +4425,7 @@ export default function Dashboard() {
                                     </div>
                                 </>
                             )}
-                            {!["event", "task", "venture", "founder", "termSheet", "content", "invoice", "contract", "document", "investor", "ticket", "automation", "user", "setting", "approval"].includes(newItem.type) && (
+                            {!["event", "task", "venture", "founder", "termSheet", "content", "invoice", "contract", "document", "investor", "ticket", "automation", "user", "setting", "billing", "auditLog", "approval"].includes(newItem.type) && (
                                 <>
                                     <div className="form-group">
                                         <label>Name</label>
