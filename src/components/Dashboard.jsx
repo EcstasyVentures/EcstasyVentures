@@ -2,11 +2,11 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import {
     FiHome, FiPieChart, FiUsers, FiDollarSign, FiCheckSquare, FiTrendingUp, FiCreditCard,
-    FiFileText, FiFolder, FiMessageSquare, FiHelpCircle, FiBarChart2, FiSettings, FiBell, FiUser,
-    FiSearch, FiPlus, FiEdit, FiTrash2, FiCalendar, FiClock, FiCheck, FiX, FiFilter, FiDownload,
-    FiChevronLeft, FiChevronRight, FiMail, FiPhone, FiLock, FiDatabase, FiShare2, FiActivity,
-    FiUserCheck, FiTool, FiShield, FiDroplet, FiAward, FiBriefcase, FiTarget, FiZap, FiGrid,
-    FiUserPlus, FiCreditCard as FiCard, FiImage, FiVideo, FiFile, FiSave, FiEye, FiPlay
+    FiFileText, FiFolder, FiMessageSquare, FiHelpCircle, FiBarChart2, FiSettings, FiBell,
+    FiSearch, FiPlus, FiEdit, FiTrash2, FiCalendar, FiCheck, FiX, FiFilter, FiDownload,
+    FiChevronLeft, FiChevronRight, FiMail, FiDatabase, FiShare2, FiActivity,
+    FiUserCheck, FiShield, FiAward, FiBriefcase, FiTarget, FiGrid,
+    FiCreditCard as FiCard, FiImage, FiVideo, FiFile, FiSave, FiPlay
 } from "react-icons/fi";
 import "../styles.css";
 
@@ -152,32 +152,32 @@ export default function Dashboard() {
         billingHistory,
         auditLogs
     };
-
+    
     // Apply theme colors to CSS variables
     useEffect(() => {
         document.documentElement.style.setProperty('--primary-color', settings.primaryColor);
         document.documentElement.style.setProperty('--secondary-color', settings.secondaryColor);
     }, [settings.primaryColor, settings.secondaryColor]);
-
+    
     // Function to check if user has permission for a section
     const hasPermission = (section) => {
         if (!user || !user.role) return false;
         return rolePermissions[user.role]?.includes(section) || false;
     };
-
+    
     // Function to check if user has edit permission for a section
     const hasEditPermission = (section) => {
         if (!user || !user.role) return false;
         return editPermissions[user.role]?.includes(section) || false;
     };
-
+    
     // Function to generate unique ID
     const generateUniqueId = () => {
         const newId = idCounter;
         setIdCounter(prev => prev + 1);
         return newId;
     };
-
+    
     // Function to save user data to backend
     const saveUserData = useCallback(async () => {
         const username = localStorage.getItem("username");
@@ -198,7 +198,40 @@ export default function Dashboard() {
             console.error('Error saving user data:', error);
         }
     }, []);
-
+    
+    // Function to update another user's data
+    const updateUserData = async (username, data) => {
+        try {
+            const response = await fetch(`http://localhost:5000/api/user-data/${username}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data),
+            });
+            const result = await response.json();
+            if (!result.success) {
+                console.error('Failed to update user data');
+            }
+            return result.success;
+        } catch (error) {
+            console.error('Error updating user data:', error);
+            return false;
+        }
+    };
+    
+    // Function to get user data
+    const getUserData = async (username) => {
+        try {
+            const response = await fetch(`http://localhost:5000/api/user-data/${username}`);
+            const userData = await response.json();
+            return userData;
+        } catch (error) {
+            console.error('Error fetching user data:', error);
+            return null;
+        }
+    };
+    
     // Debounced save
     useEffect(() => {
         const timer = setTimeout(() => {
@@ -209,7 +242,7 @@ export default function Dashboard() {
         vestingSchedules, contentCalendar, assetLibrary, campaigns, invoices, revenueShare, profitLoss,
         contracts, complianceCalendar, documents, investors, tickets, reports, automations, teams,
         settings, notifications, events, activeSubTab, billingHistory, auditLogs, saveUserData]);
-
+    
     // Function to fetch user data from backend
     const fetchUserData = async () => {
         const username = localStorage.getItem("username");
@@ -297,7 +330,7 @@ export default function Dashboard() {
             console.error('Error fetching user data:', error);
         }
     };
-
+    
     // Check if user is logged in and fetch data
     useEffect(() => {
         const username = localStorage.getItem("username");
@@ -309,19 +342,18 @@ export default function Dashboard() {
         setUser({ username, role });
         fetchUserData();
     }, [navigate]);
-
+    
     const handleLogout = () => {
         localStorage.removeItem("username");
         localStorage.removeItem("role");
         navigate("/");
     };
-
+    
     // Function to handle downloading items
     const handleDownload = (item, type) => {
         let content = '';
         let filename = '';
         let mimeType = 'text/plain';
-
         switch (type) {
             case 'document':
                 content = `Document: ${item.name}\nCategory: ${item.category}\nAccess Level: ${item.accessLevel}`;
@@ -356,7 +388,6 @@ export default function Dashboard() {
                 filename = `${type}_${item.id || 'data'}.json`;
                 mimeType = 'application/json';
         }
-
         const blob = new Blob([content], { type: mimeType });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
@@ -367,7 +398,7 @@ export default function Dashboard() {
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
     };
-
+    
     const handleAddItem = (type, data = {}) => {
         // Check if user has permission to add items in this section
         const section = type === 'event' || type === 'approval' || type === 'kpi' ? 'dashboard' :
@@ -395,7 +426,7 @@ export default function Dashboard() {
         setEditingItem(null);
         setShowAddModal(true);
     };
-
+    
     const handleEditItem = (item, type) => {
         // Check if user has permission to edit items in this section
         const section = type === 'event' || type === 'approval' ? 'dashboard' :
@@ -422,8 +453,8 @@ export default function Dashboard() {
         setNewItem({ type });
         setShowAddModal(true);
     };
-
-    const handleDeleteItem = (id, type) => {
+    
+    const handleDeleteItem = async (id, type) => {
         // Check if user has permission to delete items in this section
         const section = type === 'event' || type === 'approval' ? 'dashboard' :
                         type === 'venture' ? 'ventures' :
@@ -451,7 +482,17 @@ export default function Dashboard() {
                     setEvents(events.filter(event => event.id !== id));
                     break;
                 case 'task':
+                    const taskToDelete = tasks.find(task => task.id === id);
                     setTasks(tasks.filter(task => task.id !== id));
+                    
+                    // If the task has an assignee different from the current user, remove it from the assignee's tasks
+                    if (taskToDelete && taskToDelete.assignee !== user.username) {
+                        const assigneeData = await getUserData(taskToDelete.assignee);
+                        if (assigneeData) {
+                            const updatedTasks = assigneeData.tasks.filter(task => task.id !== id);
+                            await updateUserData(taskToDelete.assignee, { ...assigneeData, tasks: updatedTasks });
+                        }
+                    }
                     break;
                 case 'venture':
                     setVentures(ventures.filter(venture => venture.id !== id));
@@ -526,7 +567,7 @@ export default function Dashboard() {
             }
         }
     };
-
+    
     const handleApprove = (id) => {
         // Check if user has permission to approve items
         if (!hasEditPermission('dashboard')) {
@@ -550,7 +591,7 @@ export default function Dashboard() {
             alert(`Approved item with ID: ${id}`);
         }
     };
-
+    
     const handleReject = (id) => {
         // Check if user has permission to reject items
         if (!hasEditPermission('dashboard')) {
@@ -574,14 +615,14 @@ export default function Dashboard() {
             alert(`Rejected item with ID: ${id}`);
         }
     };
-
+    
     const markAsRead = (id) => {
         setNotifications(notifications.map(notif =>
             notif.id === id ? { ...notif, read: true } : notif
         ));
     };
-
-    const handleFormSubmit = (e) => {
+    
+    const handleFormSubmit = async (e) => {
         e.preventDefault();
         const formData = new FormData(e.target);
         const data = Object.fromEntries(formData.entries());
@@ -633,22 +674,55 @@ export default function Dashboard() {
                     description: data.description,
                     assignee: data.assignee,
                     dueDate: data.dueDate,
-                    status: data.status
+                    status: data.status,
+                    createdBy: editingItem ? editingItem.createdBy : user.username
                 };
+                
+                // Update current user's tasks
                 if (editingItem) {
                     setTasks(tasks.map(task => task.id === editingItem.id ? newTask : task));
                 } else {
                     setTasks([...tasks, newTask]);
-                    // If task is assigned to someone else, create notification
-                    if (data.assignee !== user.username) {
-                        const newNotification = {
-                            id: generateUniqueId(),
-                            category: 'Task',
-                            message: `You have been assigned a new task: ${data.title} by ${user.username}`,
-                            time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-                            read: false
-                        };
-                        setNotifications([...notifications, newNotification]);
+                }
+                
+                // If the assignee is not the current user, update the assignee's data
+                if (data.assignee !== user.username) {
+                    // For new task or when the assignee changes in edit
+                    if (!editingItem || (editingItem && editingItem.assignee !== data.assignee)) {
+                        // Get the assignee's current data
+                        const assigneeData = await getUserData(data.assignee);
+                        if (assigneeData) {
+                            // Add the task to the assignee's tasks array
+                            const updatedTasks = [...(assigneeData.tasks || []), newTask];
+                            // Update the assignee's data
+                            await updateUserData(data.assignee, { ...assigneeData, tasks: updatedTasks });
+                            
+                            // Also add a notification to the assignee if it's a new task
+                            if (!editingItem) {
+                                const newNotification = {
+                                    id: generateUniqueId(),
+                                    category: 'Task',
+                                    message: `You have been assigned a new task: ${data.title} by ${user.username}`,
+                                    time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                                    read: false
+                                };
+                                // Add to assignee's notifications
+                                const updatedNotifications = [...(assigneeData.notifications || []), newNotification];
+                                await updateUserData(data.assignee, { ...assigneeData, notifications: updatedNotifications });
+                            }
+                        }
+                    }
+                }
+                
+                // If editing and the assignee changed, remove the task from the old assignee's tasks
+                if (editingItem && editingItem.assignee !== data.assignee) {
+                    // Only if the old assignee is not the current user (because we already updated the current user's tasks)
+                    if (editingItem.assignee !== user.username) {
+                        const oldAssigneeData = await getUserData(editingItem.assignee);
+                        if (oldAssigneeData) {
+                            const updatedOldTasks = oldAssigneeData.tasks.filter(task => task.id !== editingItem.id);
+                            await updateUserData(editingItem.assignee, { ...oldAssigneeData, tasks: updatedOldTasks });
+                        }
                     }
                 }
                 break;
@@ -938,7 +1012,7 @@ export default function Dashboard() {
         setShowAddModal(false);
         setEditingItem(null);
     };
-
+    
     // Render functions with permission checks
     const renderDashboardHome = () => (
         <div className="dashboard-home">
@@ -1147,7 +1221,7 @@ export default function Dashboard() {
             </div>
         </div>
     );
-
+    
     const renderVenturesManagement = () => (
         <div className="ventures-management">
             <div className="section-header">
@@ -1216,7 +1290,7 @@ export default function Dashboard() {
             </div>
         </div>
     );
-
+    
     const renderFoundersDirectory = () => (
         <div className="founders-directory">
             <div className="section-header">
@@ -1296,69 +1370,80 @@ export default function Dashboard() {
             </div>
         </div>
     );
-
-    const renderTasksSprints = () => (
-        <div className="tasks-sprints">
-            <div className="section-header">
-                <h2>Task Management</h2>
-                {hasEditPermission('tasks') && (
-                    <div className="header-actions">
-                        <button className="btn-primary" onClick={() => handleAddItem("task")}>
-                            <FiPlus /> Add Task
-                        </button>
-                    </div>
-                )}
-            </div>
-            <div className="kanban-board">
-                {['To Do', 'In Progress', 'Done'].map(status => (
-                    <div key={status} className="kanban-column">
-                        <h3>{status}</h3>
-                        <div className="task-list">
-                            {tasks
-                                .filter(task => task.status === status.toLowerCase().replace(' ', ''))
-                                .map(task => (
-                                    <div key={task.id} className="task-card">
-                                        <div className="task-header">
-                                            <h4>{task.title}</h4>
-                                            {hasEditPermission('tasks') && (
-                                                <div className="task-actions">
-                                                    <button className="btn-icon" onClick={() => handleEditItem(task, "task")}>
-                                                        <FiEdit />
-                                                    </button>
-                                                    <button className="btn-icon" onClick={() => handleDeleteItem(task.id, "task")}>
-                                                        <FiTrash2 />
-                                                    </button>
-                                                </div>
-                                            )}
-                                        </div>
-                                        <div className="task-details">
-                                            <p><span>Assignee:</span> {task.assignee}</p>
-                                            <p><span>Due Date:</span> {task.dueDate}</p>
-                                        </div>
-                                        <div className="task-footer">
-                                            <span className={`task-priority ${task.status === 'done' ? 'completed' : 'pending'}`}>
-                                                {task.status === 'done' ? 'Completed' : 'Pending'}
-                                            </span>
-                                        </div>
-                                    </div>
-                                ))}
-                            {tasks.filter(task => task.status === status.toLowerCase().replace(' ', '')).length === 0 && (
-                                <div className="empty-column">
-                                    <p>No tasks</p>
-                                    {hasEditPermission('tasks') && (
-                                        <button className="btn-text" onClick={() => handleAddItem("task", { status })}>
-                                            Add Task
-                                        </button>
-                                    )}
-                                </div>
-                            )}
+    
+    const renderTasksSprints = () => {
+        const currentUser = user?.username;
+        
+        return (
+            <div className="tasks-sprints">
+                <div className="section-header">
+                    <h2>Task Management</h2>
+                    {hasEditPermission('tasks') && (
+                        <div className="header-actions">
+                            <button className="btn-primary" onClick={() => handleAddItem("task")}>
+                                <FiPlus /> Add Task
+                            </button>
                         </div>
-                    </div>
-                ))}
+                    )}
+                </div>
+                <div className="kanban-board">
+                    {['To Do', 'In Progress', 'Done'].map(status => (
+                        <div key={status} className="kanban-column">
+                            <h3>{status}</h3>
+                            <div className="task-list">
+                                {tasks
+                                    .filter(task => task.status === status.toLowerCase().replace(' ', ''))
+                                    .filter(task => task.assignee === currentUser || task.createdBy === currentUser)
+                                    .map(task => (
+                                        <div key={task.id} className="task-card">
+                                            <div className="task-header">
+                                                <h4>{task.title}</h4>
+                                                {hasEditPermission('tasks') && (
+                                                    <div className="task-actions">
+                                                        <button className="btn-icon" onClick={() => handleEditItem(task, "task")}>
+                                                            <FiEdit />
+                                                        </button>
+                                                        <button className="btn-icon" onClick={() => handleDeleteItem(task.id, "task")}>
+                                                            <FiTrash2 />
+                                                        </button>
+                                                    </div>
+                                                )}
+                                            </div>
+                                            <div className="task-details">
+                                                <p><span>Assignee:</span> {task.assignee}</p>
+                                                <p><span>Due Date:</span> {task.dueDate}</p>
+                                                {task.createdBy && task.createdBy !== task.assignee && (
+                                                    <p><span>Created by:</span> {task.createdBy}</p>
+                                                )}
+                                            </div>
+                                            <div className="task-footer">
+                                                <span className={`task-priority ${task.status === 'done' ? 'completed' : 'pending'}`}>
+                                                    {task.status === 'done' ? 'Completed' : 'Pending'}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    ))}
+                                {tasks
+                                    .filter(task => task.status === status.toLowerCase().replace(' ', ''))
+                                    .filter(task => task.assignee === currentUser || task.createdBy === currentUser)
+                                    .length === 0 && (
+                                    <div className="empty-column">
+                                        <p>No tasks</p>
+                                        {hasEditPermission('tasks') && (
+                                            <button className="btn-text" onClick={() => handleAddItem("task", { status })}>
+                                                Add Task
+                                            </button>
+                                        )}
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    ))}
+                </div>
             </div>
-        </div>
-    );
-
+        );
+    };
+    
     // Deals & Equity Section
     const renderDealsEquity = () => {
         const subTabs = [
@@ -1609,7 +1694,7 @@ export default function Dashboard() {
             </div>
         );
     };
-
+    
     // Growth & Marketing Section
     const renderGrowthMarketing = () => {
         const subTabs = [
@@ -1805,7 +1890,7 @@ export default function Dashboard() {
             </div>
         );
     };
-
+    
     // Finance Section
     const renderFinance = () => {
         const subTabs = [
@@ -1982,7 +2067,7 @@ export default function Dashboard() {
             </div>
         );
     };
-
+    
     // Legal & Compliance Section
     const renderLegalCompliance = () => {
         const subTabs = [
@@ -2133,7 +2218,7 @@ export default function Dashboard() {
             </div>
         );
     };
-
+    
     // Documents Section
     const renderDocuments = () => (
         <div className="documents">
@@ -2198,7 +2283,7 @@ export default function Dashboard() {
             </div>
         </div>
     );
-
+    
     // CRM Section
     const renderCRM = () => {
         const subTabs = [
@@ -2481,7 +2566,7 @@ export default function Dashboard() {
             </div>
         );
     };
-
+    
     // Support Section
     const renderSupport = () => (
         <div className="support">
@@ -2569,7 +2654,7 @@ export default function Dashboard() {
             </div>
         </div>
     );
-
+    
     // Reports Section
     const renderReports = () => (
         <div className="reports">
@@ -2657,7 +2742,7 @@ export default function Dashboard() {
             </div>
         </div>
     );
-
+    
     // Automations Section
     const renderAutomations = () => (
         <div className="automations">
@@ -2719,7 +2804,7 @@ export default function Dashboard() {
             </div>
         </div>
     );
-
+    
     // Users Section
     const renderUsers = () => (
         <div className="users">
@@ -2816,7 +2901,7 @@ export default function Dashboard() {
             </div>
         </div>
     );
-
+    
     // Settings Section
     const renderSettings = () => {
         const subTabs = [
@@ -3184,7 +3269,7 @@ export default function Dashboard() {
             </div>
         );
     };
-
+    
     const renderContent = () => {
         // Check if user has permission to view this section
         if (!hasPermission(activeTab)) {
@@ -3198,6 +3283,7 @@ export default function Dashboard() {
                 </div>
             );
         }
+        
         switch (activeTab) {
             case "dashboard":
                 return renderDashboardHome();
@@ -3233,7 +3319,7 @@ export default function Dashboard() {
                 return renderDashboardHome();
         }
     };
-
+    
     return (
         <div className="dashboard-container">
             <div className="sidebar">
