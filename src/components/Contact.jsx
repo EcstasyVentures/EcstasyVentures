@@ -57,7 +57,7 @@ export default function Contact() {
             <section className="section center">
                 <h3>Get in Touch</h3>
                 <p className="small contact-intro">
-                    Ready to partner? Fill the form or email us directly at <strong>jigar@ecstasyventures.com</strong>.
+                    Ready to partner? Fill the form or email us directly.
                 </p>
 
                 {submitStatus === 'success' && (

@@ -329,8 +329,8 @@ header img {
 }
 
 .logo-mark img {
-    width: 50px;
-    height: 50px;
+    width: 70px;
+    height: 70px;
     margin-bottom: 10px;
     border-radius: 50%;
     object-fit: cover;
@@ -345,7 +345,7 @@ header img {
 }
 
 .brand-name {
-    font-size: 18px;
+    font-size: 40px;
     font-weight: 700;
     margin-bottom: 5px;
     background: linear-gradient(90deg, var(--light), var(--primary));
@@ -355,7 +355,7 @@ header img {
 }
 
 .tagline {
-    font-size: 13px;
+    font-size: 30px;
     color: #aaa;
     margin-bottom: 0;
     font-style: italic;
@@ -367,7 +367,7 @@ header img {
 }
 
 .footer-column h3 {
-    font-size: 15px;
+    font-size: 25px;
     font-weight: 600;
     margin-bottom: 12px;
     color: var(--light);
@@ -398,7 +398,7 @@ header img {
 .footer-column ul li a {
     color: #aaa;
     text-decoration: none;
-    font-size: 13px;
+    font-size: 20px;
     transition: color 0.3s ease, padding-left 0.3s ease;
     display: inline-block;
 }
@@ -417,7 +417,7 @@ header img {
 }
 
 .footer-newsletter h3 {
-    font-size: 15px;
+    font-size: 20px;
     font-weight: 600;
     margin-bottom: 8px;
     color: var(--light);
@@ -425,7 +425,7 @@ header img {
 
 .newsletter-form {
     display: flex;
-    gap: 8px;
+    gap: 5px;
 }
 
 .newsletter-form input {
@@ -434,7 +434,7 @@ header img {
     border-radius: 4px;
     padding: 8px 10px;
     color: var(--light);
-    font-size: 13px;
+    font-size: 20px;
     flex: 1;
     transition: border-color 0.3s ease, background 0.3s ease;
 }
@@ -452,7 +452,7 @@ header img {
     padding: 8px 12px;
     color: white;
     font-weight: 600;
-    font-size: 13px;
+    font-size: 20px;
     cursor: pointer;
     transition: transform 0.3s ease, box-shadow 0.3s ease;
     white-space: nowrap;
@@ -499,22 +499,22 @@ header img {
 
 .copyright {
     color: #888;
-    font-size: 12px;
+    font-size: 26px;
 }
 
 .back-to-top {
     background: rgba(255, 255, 255, 0.1);
     border: none;
     border-radius: 50%;
-    width: 32px;
-    height: 32px;
+    width: 50px;
+    height: 50px;
     display: flex;
     align-items: center;
     justify-content: center;
     color: var(--light);
     cursor: pointer;
     transition: all 0.3s ease;
-    font-size: 14px;
+    font-size: 20px;
 }
 
 .back-to-top:hover {
