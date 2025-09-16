@@ -2,11 +2,11 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import {
     FiHome, FiPieChart, FiUsers, FiDollarSign, FiCheckSquare, FiTrendingUp, FiCreditCard,
-    FiFileText, FiFolder, FiMessageSquare, FiHelpCircle, FiBarChart2, FiSettings, FiBell, FiUser,
-    FiSearch, FiPlus, FiEdit, FiTrash2, FiCalendar, FiClock, FiCheck, FiX, FiFilter, FiDownload,
-    FiChevronLeft, FiChevronRight, FiMail, FiPhone, FiLock, FiDatabase, FiShare2, FiActivity,
-    FiUserCheck, FiTool, FiShield, FiDroplet, FiAward, FiBriefcase, FiTarget, FiZap, FiGrid,
-    FiUserPlus, FiCreditCard as FiCard, FiImage, FiVideo, FiFile, FiSave, FiEye, FiPlay
+    FiFileText, FiFolder, FiMessageSquare, FiHelpCircle, FiBarChart2, FiSettings, FiBell,
+    FiSearch, FiPlus, FiEdit, FiTrash2, FiCalendar, FiCheck, FiX, FiFilter, FiDownload,
+    FiChevronLeft, FiChevronRight, FiMail, FiDatabase, FiShare2, FiActivity,
+    FiUserCheck, FiShield, FiAward, FiBriefcase, FiTarget, FiGrid,
+    FiCreditCard as FiCard, FiImage, FiVideo, FiFile, FiSave, FiPlay
 } from "react-icons/fi";
 import "../styles.css";
 
@@ -112,6 +112,10 @@ export default function Dashboard() {
         settings: "branding"
     });
     
+    // New state for billing and audit logs
+    const [billingHistory, setBillingHistory] = useState([]);
+    const [auditLogs, setAuditLogs] = useState([]);
+    
     // Counter for unique IDs
     const [idCounter, setIdCounter] = useState(1);
     
@@ -144,28 +148,36 @@ export default function Dashboard() {
         settings,
         notifications,
         events,
-        activeSubTab
+        activeSubTab,
+        billingHistory,
+        auditLogs
     };
-
+    
+    // Apply theme colors to CSS variables
+    useEffect(() => {
+        document.documentElement.style.setProperty('--primary-color', settings.primaryColor);
+        document.documentElement.style.setProperty('--secondary-color', settings.secondaryColor);
+    }, [settings.primaryColor, settings.secondaryColor]);
+    
     // Function to check if user has permission for a section
     const hasPermission = (section) => {
         if (!user || !user.role) return false;
         return rolePermissions[user.role]?.includes(section) || false;
     };
-
+    
     // Function to check if user has edit permission for a section
     const hasEditPermission = (section) => {
         if (!user || !user.role) return false;
         return editPermissions[user.role]?.includes(section) || false;
     };
-
+    
     // Function to generate unique ID
     const generateUniqueId = () => {
         const newId = idCounter;
         setIdCounter(prev => prev + 1);
         return newId;
     };
-
+    
     // Function to save user data to backend
     const saveUserData = useCallback(async () => {
         const username = localStorage.getItem("username");
@@ -186,7 +198,40 @@ export default function Dashboard() {
             console.error('Error saving user data:', error);
         }
     }, []);
-
+    
+    // Function to update another user's data
+    const updateUserData = async (username, data) => {
+        try {
+            const response = await fetch(`http://localhost:5000/api/user-data/${username}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data),
+            });
+            const result = await response.json();
+            if (!result.success) {
+                console.error('Failed to update user data');
+            }
+            return result.success;
+        } catch (error) {
+            console.error('Error updating user data:', error);
+            return false;
+        }
+    };
+    
+    // Function to get user data
+    const getUserData = async (username) => {
+        try {
+            const response = await fetch(`http://localhost:5000/api/user-data/${username}`);
+            const userData = await response.json();
+            return userData;
+        } catch (error) {
+            console.error('Error fetching user data:', error);
+            return null;
+        }
+    };
+    
     // Debounced save
     useEffect(() => {
         const timer = setTimeout(() => {
@@ -196,8 +241,8 @@ export default function Dashboard() {
     }, [kpiData, approvals, ventures, founders, tasks, termSheets, capTable, equityLedger,
         vestingSchedules, contentCalendar, assetLibrary, campaigns, invoices, revenueShare, profitLoss,
         contracts, complianceCalendar, documents, investors, tickets, reports, automations, teams,
-        settings, notifications, events, activeSubTab, saveUserData]);
-
+        settings, notifications, events, activeSubTab, billingHistory, auditLogs, saveUserData]);
+    
     // Function to fetch user data from backend
     const fetchUserData = async () => {
         const username = localStorage.getItem("username");
@@ -245,6 +290,9 @@ export default function Dashboard() {
                 crm: "investors",
                 settings: "branding"
             });
+            setBillingHistory(userData.billingHistory || []);
+            setAuditLogs(userData.auditLogs || []);
+            
             // Find the highest ID to set the counter
             const allItems = [
                 ...userData.kpiData || [],
@@ -269,7 +317,9 @@ export default function Dashboard() {
                 ...userData.teams || [],
                 ...(userData.settings?.integrations || []),
                 ...userData.notifications || [],
-                ...userData.events || []
+                ...userData.events || [],
+                ...userData.billingHistory || [],
+                ...userData.auditLogs || []
             ];
             const maxId = allItems.reduce((max, item) => {
                 const itemId = parseInt(item.id);
@@ -280,7 +330,7 @@ export default function Dashboard() {
             console.error('Error fetching user data:', error);
         }
     };
-
+    
     // Check if user is logged in and fetch data
     useEffect(() => {
         const username = localStorage.getItem("username");
@@ -292,13 +342,63 @@ export default function Dashboard() {
         setUser({ username, role });
         fetchUserData();
     }, [navigate]);
-
+    
     const handleLogout = () => {
         localStorage.removeItem("username");
         localStorage.removeItem("role");
         navigate("/");
     };
-
+    
+    // Function to handle downloading items
+    const handleDownload = (item, type) => {
+        let content = '';
+        let filename = '';
+        let mimeType = 'text/plain';
+        switch (type) {
+            case 'document':
+                content = `Document: ${item.name}\nCategory: ${item.category}\nAccess Level: ${item.accessLevel}`;
+                filename = `${item.name}.txt`;
+                break;
+            case 'contract':
+                content = `Contract: ${item.title}\nParty: ${item.party}\nType: ${item.type}\nStart Date: ${item.startDate}\nEnd Date: ${item.endDate}`;
+                filename = `${item.title}.txt`;
+                break;
+            case 'invoice':
+                content = `Invoice #: ${item.number}\nClient: ${item.client}\nAmount: ${item.amount}\nDue Date: ${item.dueDate}\nStatus: ${item.status}`;
+                filename = `Invoice_${item.number}.txt`;
+                break;
+            case 'termSheet':
+                content = `Term Sheet: ${item.title}\nCompany: ${item.company}\nAmount: ${item.amount}\nStatus: ${item.status}`;
+                filename = `TermSheet_${item.title}.txt`;
+                break;
+            case 'report':
+                content = `Report: ${item.title}\nGenerated: ${new Date().toLocaleDateString()}\n\nThis is a sample report for ${item.title}.`;
+                filename = `Report_${item.title}.txt`;
+                break;
+            case 'billing':
+                content = `Date: ${item.date}\nDescription: ${item.description}\nAmount: ${item.amount}\nStatus: ${item.status}`;
+                filename = `Billing_${item.date.replace(/\//g, '-')}.txt`;
+                break;
+            case 'auditLog':
+                content = `Date & Time: ${item.dateTime}\nUser: ${item.user}\nAction: ${item.action}\nDetails: ${item.details}\nIP Address: ${item.ip}`;
+                filename = `AuditLog_${item.dateTime.replace(/[:/\s]/g, '-')}.txt`;
+                break;
+            default:
+                content = JSON.stringify(item, null, 2);
+                filename = `${type}_${item.id || 'data'}.json`;
+                mimeType = 'application/json';
+        }
+        const blob = new Blob([content], { type: mimeType });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    };
+    
     const handleAddItem = (type, data = {}) => {
         // Check if user has permission to add items in this section
         const section = type === 'event' || type === 'approval' || type === 'kpi' ? 'dashboard' :
@@ -314,7 +414,8 @@ export default function Dashboard() {
                         type === 'ticket' ? 'support' :
                         type === 'automation' ? 'automations' :
                         type === 'user' ? 'users' :
-                        type === 'setting' ? 'settings' : '';
+                        type === 'billing' ? 'settings' :
+                        type === 'auditLog' ? 'settings' : '';
         
         if (!hasEditPermission(section)) {
             alert("You don't have permission to add items in this section");
@@ -325,7 +426,7 @@ export default function Dashboard() {
         setEditingItem(null);
         setShowAddModal(true);
     };
-
+    
     const handleEditItem = (item, type) => {
         // Check if user has permission to edit items in this section
         const section = type === 'event' || type === 'approval' ? 'dashboard' :
@@ -341,7 +442,7 @@ export default function Dashboard() {
                         type === 'ticket' ? 'support' :
                         type === 'automation' ? 'automations' :
                         type === 'user' ? 'users' :
-                        type === 'setting' ? 'settings' : '';
+                        type === 'billing' || type === 'auditLog' ? 'settings' : '';
         
         if (!hasEditPermission(section)) {
             alert("You don't have permission to edit items in this section");
@@ -352,8 +453,8 @@ export default function Dashboard() {
         setNewItem({ type });
         setShowAddModal(true);
     };
-
-    const handleDeleteItem = (id, type) => {
+    
+    const handleDeleteItem = async (id, type) => {
         // Check if user has permission to delete items in this section
         const section = type === 'event' || type === 'approval' ? 'dashboard' :
                         type === 'venture' ? 'ventures' :
@@ -368,7 +469,7 @@ export default function Dashboard() {
                         type === 'ticket' ? 'support' :
                         type === 'automation' ? 'automations' :
                         type === 'user' ? 'users' :
-                        type === 'setting' ? 'settings' : '';
+                        type === 'billing' || type === 'auditLog' ? 'settings' : '';
         
         if (!hasEditPermission(section)) {
             alert("You don't have permission to delete items in this section");
@@ -381,7 +482,17 @@ export default function Dashboard() {
                     setEvents(events.filter(event => event.id !== id));
                     break;
                 case 'task':
+                    const taskToDelete = tasks.find(task => task.id === id);
                     setTasks(tasks.filter(task => task.id !== id));
+                    
+                    // If the task has an assignee different from the current user, remove it from the assignee's tasks
+                    if (taskToDelete && taskToDelete.assignee !== user.username) {
+                        const assigneeData = await getUserData(taskToDelete.assignee);
+                        if (assigneeData) {
+                            const updatedTasks = assigneeData.tasks.filter(task => task.id !== id);
+                            await updateUserData(taskToDelete.assignee, { ...assigneeData, tasks: updatedTasks });
+                        }
+                    }
                     break;
                 case 'venture':
                     setVentures(ventures.filter(venture => venture.id !== id));
@@ -445,12 +556,18 @@ export default function Dashboard() {
                 case 'approval':
                     setApprovals(approvals.filter(approval => approval.id !== id));
                     break;
+                case 'billing':
+                    setBillingHistory(billingHistory.filter((_, index) => index !== id));
+                    break;
+                case 'auditLog':
+                    setAuditLogs(auditLogs.filter((_, index) => index !== id));
+                    break;
                 default:
                     alert(`Deleted ${type} with ID: ${id}`);
             }
         }
     };
-
+    
     const handleApprove = (id) => {
         // Check if user has permission to approve items
         if (!hasEditPermission('dashboard')) {
@@ -474,7 +591,7 @@ export default function Dashboard() {
             alert(`Approved item with ID: ${id}`);
         }
     };
-
+    
     const handleReject = (id) => {
         // Check if user has permission to reject items
         if (!hasEditPermission('dashboard')) {
@@ -498,14 +615,14 @@ export default function Dashboard() {
             alert(`Rejected item with ID: ${id}`);
         }
     };
-
+    
     const markAsRead = (id) => {
         setNotifications(notifications.map(notif =>
             notif.id === id ? { ...notif, read: true } : notif
         ));
     };
-
-    const handleFormSubmit = (e) => {
+    
+    const handleFormSubmit = async (e) => {
         e.preventDefault();
         const formData = new FormData(e.target);
         const data = Object.fromEntries(formData.entries());
@@ -524,7 +641,7 @@ export default function Dashboard() {
                         newItem.type === 'ticket' ? 'support' :
                         newItem.type === 'automation' ? 'automations' :
                         newItem.type === 'user' ? 'users' :
-                        newItem.type === 'setting' ? 'settings' : '';
+                        newItem.type === 'setting' || newItem.type === 'billing' || newItem.type === 'auditLog' ? 'settings' : '';
         
         if (!hasEditPermission(section)) {
             alert("You don't have permission to submit this form");
@@ -557,22 +674,55 @@ export default function Dashboard() {
                     description: data.description,
                     assignee: data.assignee,
                     dueDate: data.dueDate,
-                    status: data.status
+                    status: data.status,
+                    createdBy: editingItem ? editingItem.createdBy : user.username
                 };
+                
+                // Update current user's tasks
                 if (editingItem) {
                     setTasks(tasks.map(task => task.id === editingItem.id ? newTask : task));
                 } else {
                     setTasks([...tasks, newTask]);
-                    // If task is assigned to someone else, create notification
-                    if (data.assignee !== user.username) {
-                        const newNotification = {
-                            id: generateUniqueId(),
-                            category: 'Task',
-                            message: `You have been assigned a new task: ${data.title} by ${user.username}`,
-                            time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-                            read: false
-                        };
-                        setNotifications([...notifications, newNotification]);
+                }
+                
+                // If the assignee is not the current user, update the assignee's data
+                if (data.assignee !== user.username) {
+                    // For new task or when the assignee changes in edit
+                    if (!editingItem || (editingItem && editingItem.assignee !== data.assignee)) {
+                        // Get the assignee's current data
+                        const assigneeData = await getUserData(data.assignee);
+                        if (assigneeData) {
+                            // Add the task to the assignee's tasks array
+                            const updatedTasks = [...(assigneeData.tasks || []), newTask];
+                            // Update the assignee's data
+                            await updateUserData(data.assignee, { ...assigneeData, tasks: updatedTasks });
+                            
+                            // Also add a notification to the assignee if it's a new task
+                            if (!editingItem) {
+                                const newNotification = {
+                                    id: generateUniqueId(),
+                                    category: 'Task',
+                                    message: `You have been assigned a new task: ${data.title} by ${user.username}`,
+                                    time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                                    read: false
+                                };
+                                // Add to assignee's notifications
+                                const updatedNotifications = [...(assigneeData.notifications || []), newNotification];
+                                await updateUserData(data.assignee, { ...assigneeData, notifications: updatedNotifications });
+                            }
+                        }
+                    }
+                }
+                
+                // If editing and the assignee changed, remove the task from the old assignee's tasks
+                if (editingItem && editingItem.assignee !== data.assignee) {
+                    // Only if the old assignee is not the current user (because we already updated the current user's tasks)
+                    if (editingItem.assignee !== user.username) {
+                        const oldAssigneeData = await getUserData(editingItem.assignee);
+                        if (oldAssigneeData) {
+                            const updatedOldTasks = oldAssigneeData.tasks.filter(task => task.id !== editingItem.id);
+                            await updateUserData(editingItem.assignee, { ...oldAssigneeData, tasks: updatedOldTasks });
+                        }
                     }
                 }
                 break;
@@ -778,6 +928,35 @@ export default function Dashboard() {
                     }
                 }
                 break;
+            case 'billing':
+                const newBilling = {
+                    id: editingItem ? editingItem.id : generateUniqueId(),
+                    date: data.date,
+                    description: data.description,
+                    amount: data.amount,
+                    status: data.status
+                };
+                if (editingItem) {
+                    setBillingHistory(billingHistory.map(billing => billing.id === editingItem.id ? newBilling : billing));
+                } else {
+                    setBillingHistory([...billingHistory, newBilling]);
+                }
+                break;
+            case 'auditLog':
+                const newAuditLog = {
+                    id: editingItem ? editingItem.id : generateUniqueId(),
+                    dateTime: data.dateTime,
+                    user: data.user,
+                    action: data.action,
+                    details: data.details,
+                    ip: data.ip
+                };
+                if (editingItem) {
+                    setAuditLogs(auditLogs.map(log => log.id === editingItem.id ? newAuditLog : log));
+                } else {
+                    setAuditLogs([...auditLogs, newAuditLog]);
+                }
+                break;
             case 'approval':
                 const newApproval = {
                     id: editingItem ? editingItem.id : generateUniqueId(),
@@ -833,7 +1012,7 @@ export default function Dashboard() {
         setShowAddModal(false);
         setEditingItem(null);
     };
-
+    
     // Render functions with permission checks
     const renderDashboardHome = () => (
         <div className="dashboard-home">
@@ -989,7 +1168,7 @@ export default function Dashboard() {
                             <button className="btn-icon"><FiChevronRight /></button>
                         </div>
                     </div>
-                    <div className="calendar-grid">
+                    <div className="calendar-grid compact">
                         {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
                             <div key={day} className="calendar-day-header">{day}</div>
                         ))}
@@ -1042,7 +1221,7 @@ export default function Dashboard() {
             </div>
         </div>
     );
-
+    
     const renderVenturesManagement = () => (
         <div className="ventures-management">
             <div className="section-header">
@@ -1111,7 +1290,7 @@ export default function Dashboard() {
             </div>
         </div>
     );
-
+    
     const renderFoundersDirectory = () => (
         <div className="founders-directory">
             <div className="section-header">
@@ -1191,69 +1370,80 @@ export default function Dashboard() {
             </div>
         </div>
     );
-
-    const renderTasksSprints = () => (
-        <div className="tasks-sprints">
-            <div className="section-header">
-                <h2>Task Management</h2>
-                {hasEditPermission('tasks') && (
-                    <div className="header-actions">
-                        <button className="btn-primary" onClick={() => handleAddItem("task")}>
-                            <FiPlus /> Add Task
-                        </button>
-                    </div>
-                )}
-            </div>
-            <div className="kanban-board">
-                {['To Do', 'In Progress', 'Done'].map(status => (
-                    <div key={status} className="kanban-column">
-                        <h3>{status}</h3>
-                        <div className="task-list">
-                            {tasks
-                                .filter(task => task.status === status.toLowerCase().replace(' ', ''))
-                                .map(task => (
-                                    <div key={task.id} className="task-card">
-                                        <div className="task-header">
-                                            <h4>{task.title}</h4>
-                                            {hasEditPermission('tasks') && (
-                                                <div className="task-actions">
-                                                    <button className="btn-icon" onClick={() => handleEditItem(task, "task")}>
-                                                        <FiEdit />
-                                                    </button>
-                                                    <button className="btn-icon" onClick={() => handleDeleteItem(task.id, "task")}>
-                                                        <FiTrash2 />
-                                                    </button>
-                                                </div>
-                                            )}
-                                        </div>
-                                        <div className="task-details">
-                                            <p><span>Assignee:</span> {task.assignee}</p>
-                                            <p><span>Due Date:</span> {task.dueDate}</p>
-                                        </div>
-                                        <div className="task-footer">
-                                            <span className={`task-priority ${task.status === 'done' ? 'completed' : 'pending'}`}>
-                                                {task.status === 'done' ? 'Completed' : 'Pending'}
-                                            </span>
-                                        </div>
-                                    </div>
-                                ))}
-                            {tasks.filter(task => task.status === status.toLowerCase().replace(' ', '')).length === 0 && (
-                                <div className="empty-column">
-                                    <p>No tasks</p>
-                                    {hasEditPermission('tasks') && (
-                                        <button className="btn-text" onClick={() => handleAddItem("task", { status })}>
-                                            Add Task
-                                        </button>
-                                    )}
-                                </div>
-                            )}
+    
+    const renderTasksSprints = () => {
+        const currentUser = user?.username;
+        
+        return (
+            <div className="tasks-sprints">
+                <div className="section-header">
+                    <h2>Task Management</h2>
+                    {hasEditPermission('tasks') && (
+                        <div className="header-actions">
+                            <button className="btn-primary" onClick={() => handleAddItem("task")}>
+                                <FiPlus /> Add Task
+                            </button>
                         </div>
-                    </div>
-                ))}
+                    )}
+                </div>
+                <div className="kanban-board">
+                    {['To Do', 'In Progress', 'Done'].map(status => (
+                        <div key={status} className="kanban-column">
+                            <h3>{status}</h3>
+                            <div className="task-list">
+                                {tasks
+                                    .filter(task => task.status === status.toLowerCase().replace(' ', ''))
+                                    .filter(task => task.assignee === currentUser || task.createdBy === currentUser)
+                                    .map(task => (
+                                        <div key={task.id} className="task-card">
+                                            <div className="task-header">
+                                                <h4>{task.title}</h4>
+                                                {hasEditPermission('tasks') && (
+                                                    <div className="task-actions">
+                                                        <button className="btn-icon" onClick={() => handleEditItem(task, "task")}>
+                                                            <FiEdit />
+                                                        </button>
+                                                        <button className="btn-icon" onClick={() => handleDeleteItem(task.id, "task")}>
+                                                            <FiTrash2 />
+                                                        </button>
+                                                    </div>
+                                                )}
+                                            </div>
+                                            <div className="task-details">
+                                                <p><span>Assignee:</span> {task.assignee}</p>
+                                                <p><span>Due Date:</span> {task.dueDate}</p>
+                                                {task.createdBy && task.createdBy !== task.assignee && (
+                                                    <p><span>Created by:</span> {task.createdBy}</p>
+                                                )}
+                                            </div>
+                                            <div className="task-footer">
+                                                <span className={`task-priority ${task.status === 'done' ? 'completed' : 'pending'}`}>
+                                                    {task.status === 'done' ? 'Completed' : 'Pending'}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    ))}
+                                {tasks
+                                    .filter(task => task.status === status.toLowerCase().replace(' ', ''))
+                                    .filter(task => task.assignee === currentUser || task.createdBy === currentUser)
+                                    .length === 0 && (
+                                    <div className="empty-column">
+                                        <p>No tasks</p>
+                                        {hasEditPermission('tasks') && (
+                                            <button className="btn-text" onClick={() => handleAddItem("task", { status })}>
+                                                Add Task
+                                            </button>
+                                        )}
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    ))}
+                </div>
             </div>
-        </div>
-    );
-
+        );
+    };
+    
     // Deals & Equity Section
     const renderDealsEquity = () => {
         const subTabs = [
@@ -1327,8 +1517,8 @@ export default function Dashboard() {
                                                             <button className="btn-icon" onClick={() => handleDeleteItem(sheet.id, "termSheet")}>
                                                                 <FiTrash2 />
                                                             </button>
-                                                            <button className="btn-icon">
-                                                                <FiEye />
+                                                            <button className="btn-icon" onClick={() => handleDownload(sheet, 'termSheet')}>
+                                                                <FiDownload />
                                                             </button>
                                                         </div>
                                                     )}
@@ -1380,6 +1570,9 @@ export default function Dashboard() {
                                                             <button className="btn-icon" onClick={() => handleDeleteItem(index, "capTable")}>
                                                                 <FiTrash2 />
                                                             </button>
+                                                            <button className="btn-icon" onClick={() => handleDownload(entry, 'capTable')}>
+                                                                <FiDownload />
+                                                            </button>
                                                         </div>
                                                     )}
                                                 </td>
@@ -1429,6 +1622,9 @@ export default function Dashboard() {
                                                             </button>
                                                             <button className="btn-icon" onClick={() => handleDeleteItem(index, "equityLedger")}>
                                                                 <FiTrash2 />
+                                                            </button>
+                                                            <button className="btn-icon" onClick={() => handleDownload(entry, 'equityLedger')}>
+                                                                <FiDownload />
                                                             </button>
                                                         </div>
                                                     )}
@@ -1480,6 +1676,9 @@ export default function Dashboard() {
                                                             <button className="btn-icon" onClick={() => handleDeleteItem(index, "vestingSchedule")}>
                                                                 <FiTrash2 />
                                                             </button>
+                                                            <button className="btn-icon" onClick={() => handleDownload(schedule, 'vestingSchedule')}>
+                                                                <FiDownload />
+                                                            </button>
                                                         </div>
                                                     )}
                                                 </td>
@@ -1495,7 +1694,7 @@ export default function Dashboard() {
             </div>
         );
     };
-
+    
     // Growth & Marketing Section
     const renderGrowthMarketing = () => {
         const subTabs = [
@@ -1573,6 +1772,9 @@ export default function Dashboard() {
                                                         <button className="btn-icon" onClick={() => handleDeleteItem(content.id, "content")}>
                                                             <FiTrash2 />
                                                         </button>
+                                                        <button className="btn-icon" onClick={() => handleDownload(content, 'content')}>
+                                                            <FiDownload />
+                                                        </button>
                                                     </div>
                                                 )}
                                             </div>
@@ -1612,7 +1814,7 @@ export default function Dashboard() {
                                                     <button className="btn-icon" onClick={() => handleDeleteItem(index, "asset")}>
                                                         <FiTrash2 />
                                                     </button>
-                                                    <button className="btn-icon">
+                                                    <button className="btn-icon" onClick={() => handleDownload(asset, 'asset')}>
                                                         <FiDownload />
                                                     </button>
                                                 </div>
@@ -1670,8 +1872,8 @@ export default function Dashboard() {
                                                             <button className="btn-icon" onClick={() => handleDeleteItem(index, "campaign")}>
                                                                 <FiTrash2 />
                                                             </button>
-                                                            <button className="btn-icon">
-                                                                <FiBarChart2 />
+                                                            <button className="btn-icon" onClick={() => handleDownload(campaign, 'campaign')}>
+                                                                <FiDownload />
                                                             </button>
                                                         </div>
                                                     )}
@@ -1688,7 +1890,7 @@ export default function Dashboard() {
             </div>
         );
     };
-
+    
     // Finance Section
     const renderFinance = () => {
         const subTabs = [
@@ -1763,7 +1965,7 @@ export default function Dashboard() {
                                                             <button className="btn-icon" onClick={() => handleDeleteItem(index, "invoice")}>
                                                                 <FiTrash2 />
                                                             </button>
-                                                            <button className="btn-icon">
+                                                            <button className="btn-icon" onClick={() => handleDownload(invoice, 'invoice')}>
                                                                 <FiDownload />
                                                             </button>
                                                         </div>
@@ -1865,7 +2067,7 @@ export default function Dashboard() {
             </div>
         );
     };
-
+    
     // Legal & Compliance Section
     const renderLegalCompliance = () => {
         const subTabs = [
@@ -1941,7 +2143,7 @@ export default function Dashboard() {
                                                             <button className="btn-icon" onClick={() => handleDeleteItem(index, "contract")}>
                                                                 <FiTrash2 />
                                                             </button>
-                                                            <button className="btn-icon">
+                                                            <button className="btn-icon" onClick={() => handleDownload(contract, 'contract')}>
                                                                 <FiDownload />
                                                             </button>
                                                         </div>
@@ -2000,6 +2202,9 @@ export default function Dashboard() {
                                                         <button className="btn-icon" onClick={() => handleDeleteItem(index, "complianceEvent")}>
                                                             <FiTrash2 />
                                                         </button>
+                                                        <button className="btn-icon" onClick={() => handleDownload(event, 'complianceEvent')}>
+                                                            <FiDownload />
+                                                        </button>
                                                     </div>
                                                 )}
                                             </div>
@@ -2013,7 +2218,7 @@ export default function Dashboard() {
             </div>
         );
     };
-
+    
     // Documents Section
     const renderDocuments = () => (
         <div className="documents">
@@ -2055,7 +2260,7 @@ export default function Dashboard() {
                                                 <button className="btn-icon" onClick={() => handleDeleteItem(index, "document")}>
                                                     <FiTrash2 />
                                                 </button>
-                                                <button className="btn-icon">
+                                                <button className="btn-icon" onClick={() => handleDownload(doc, 'document')}>
                                                     <FiDownload />
                                                 </button>
                                             </div>
@@ -2078,7 +2283,7 @@ export default function Dashboard() {
             </div>
         </div>
     );
-
+    
     // CRM Section
     const renderCRM = () => {
         const subTabs = [
@@ -2159,6 +2364,9 @@ export default function Dashboard() {
                                                                 <button className="btn-icon">
                                                                     <FiMail />
                                                                 </button>
+                                                                <button className="btn-icon" onClick={() => handleDownload(investor, 'investor')}>
+                                                                    <FiDownload />
+                                                                </button>
                                                             </div>
                                                         )}
                                                     </td>
@@ -2216,6 +2424,9 @@ export default function Dashboard() {
                                                                 <button className="btn-icon">
                                                                     <FiMail />
                                                                 </button>
+                                                                <button className="btn-icon" onClick={() => handleDownload(mentor, 'mentor')}>
+                                                                    <FiDownload />
+                                                                </button>
                                                             </div>
                                                         )}
                                                     </td>
@@ -2272,6 +2483,9 @@ export default function Dashboard() {
                                                                 </button>
                                                                 <button className="btn-icon">
                                                                     <FiMail />
+                                                                </button>
+                                                                <button className="btn-icon" onClick={() => handleDownload(partner, 'partner')}>
+                                                                    <FiDownload />
                                                                 </button>
                                                             </div>
                                                         )}
@@ -2334,6 +2548,9 @@ export default function Dashboard() {
                                                             <button className="btn-icon">
                                                                 <FiBarChart2 />
                                                             </button>
+                                                            <button className="btn-icon" onClick={() => handleDownload(campaign, 'campaign')}>
+                                                                <FiDownload />
+                                                            </button>
                                                         </div>
                                                     )}
                                                 </td>
@@ -2349,7 +2566,7 @@ export default function Dashboard() {
             </div>
         );
     };
-
+    
     // Support Section
     const renderSupport = () => (
         <div className="support">
@@ -2425,6 +2642,9 @@ export default function Dashboard() {
                                         <button className="btn-icon">
                                             <FiMail />
                                         </button>
+                                        <button className="btn-icon" onClick={() => handleDownload(ticket, 'ticket')}>
+                                            <FiDownload />
+                                        </button>
                                     </div>
                                 )}
                             </div>
@@ -2434,7 +2654,7 @@ export default function Dashboard() {
             </div>
         </div>
     );
-
+    
     // Reports Section
     const renderReports = () => (
         <div className="reports">
@@ -2458,7 +2678,7 @@ export default function Dashboard() {
                 <div className="report-card">
                     <div className="report-header">
                         <h3>Venture Performance</h3>
-                        <button className="btn-icon">
+                        <button className="btn-icon" onClick={() => handleDownload({title: 'Venture Performance'}, 'report')}>
                             <FiDownload />
                         </button>
                     </div>
@@ -2474,7 +2694,7 @@ export default function Dashboard() {
                 <div className="report-card">
                     <div className="report-header">
                         <h3>Cohort Analysis</h3>
-                        <button className="btn-icon">
+                        <button className="btn-icon" onClick={() => handleDownload({title: 'Cohort Analysis'}, 'report')}>
                             <FiDownload />
                         </button>
                     </div>
@@ -2490,7 +2710,7 @@ export default function Dashboard() {
                 <div className="report-card">
                     <div className="report-header">
                         <h3>CAC/LTV Tracking</h3>
-                        <button className="btn-icon">
+                        <button className="btn-icon" onClick={() => handleDownload({title: 'CAC/LTV Tracking'}, 'report')}>
                             <FiDownload />
                         </button>
                     </div>
@@ -2506,7 +2726,7 @@ export default function Dashboard() {
                 <div className="report-card">
                     <div className="report-header">
                         <h3>Funnel Reports</h3>
-                        <button className="btn-icon">
+                        <button className="btn-icon" onClick={() => handleDownload({title: 'Funnel Reports'}, 'report')}>
                             <FiDownload />
                         </button>
                     </div>
@@ -2522,7 +2742,7 @@ export default function Dashboard() {
             </div>
         </div>
     );
-
+    
     // Automations Section
     const renderAutomations = () => (
         <div className="automations">
@@ -2573,6 +2793,9 @@ export default function Dashboard() {
                                     <button className="btn-icon">
                                         <FiPlay />
                                     </button>
+                                    <button className="btn-icon" onClick={() => handleDownload(automation, 'automation')}>
+                                        <FiDownload />
+                                    </button>
                                 </div>
                             )}
                         </div>
@@ -2581,7 +2804,7 @@ export default function Dashboard() {
             </div>
         </div>
     );
-
+    
     // Users Section
     const renderUsers = () => (
         <div className="users">
@@ -2661,6 +2884,9 @@ export default function Dashboard() {
                                                         <button className="btn-icon" onClick={() => handleDeleteItem(index, "user")}>
                                                             <FiTrash2 />
                                                         </button>
+                                                        <button className="btn-icon" onClick={() => handleDownload(user, 'user')}>
+                                                            <FiDownload />
+                                                        </button>
                                                     </div>
                                                 )}
                                             </td>
@@ -2675,7 +2901,7 @@ export default function Dashboard() {
             </div>
         </div>
     );
-
+    
     // Settings Section
     const renderSettings = () => {
         const subTabs = [
@@ -2731,21 +2957,42 @@ export default function Dashboard() {
                                     </div>
                                     <div className="form-group">
                                         <label>Primary Color</label>
-                                        <input
-                                            type="color"
-                                            name="primaryColor"
-                                            defaultValue={settings.primaryColor || '#001f3f'}
-                                            required
-                                        />
+                                        <div className="color-picker">
+                                            <input
+                                                type="color"
+                                                name="primaryColor"
+                                                defaultValue={settings.primaryColor || '#001f3f'}
+                                                required
+                                            />
+                                            <span>{settings.primaryColor || '#001f3f'}</span>
+                                        </div>
                                     </div>
                                     <div className="form-group">
                                         <label>Secondary Color</label>
-                                        <input
-                                            type="color"
-                                            name="secondaryColor"
-                                            defaultValue={settings.secondaryColor || '#ff851b'}
-                                            required
-                                        />
+                                        <div className="color-picker">
+                                            <input
+                                                type="color"
+                                                name="secondaryColor"
+                                                defaultValue={settings.secondaryColor || '#ff851b'}
+                                                required
+                                            />
+                                            <span>{settings.secondaryColor || '#ff851b'}</span>
+                                        </div>
+                                    </div>
+                                    <div className="form-group">
+                                        <label>Preview</label>
+                                        <div className="branding-preview" style={{ 
+                                            backgroundColor: settings.primaryColor || '#001f3f',
+                                            color: '#ffffff'
+                                        }}>
+                                            <h4 style={{ color: settings.secondaryColor || '#ff851b' }}>
+                                                {settings.companyName || 'Ecstasy Ventures'}
+                                            </h4>
+                                            <p>This is a preview of your branding colors</p>
+                                            <button style={{ backgroundColor: settings.secondaryColor || '#ff851b' }}>
+                                                Sample Button
+                                            </button>
+                                        </div>
                                     </div>
                                     <button type="submit" className="btn-primary">
                                         Save Changes
@@ -2785,6 +3032,9 @@ export default function Dashboard() {
                                                     </button>
                                                     <button className="btn-icon" onClick={() => handleDeleteItem(index, "setting")}>
                                                         <FiTrash2 />
+                                                    </button>
+                                                    <button className="btn-icon" onClick={() => handleDownload(integration, 'integration')}>
+                                                        <FiDownload />
                                                     </button>
                                                 </div>
                                             )}
@@ -2839,11 +3089,19 @@ export default function Dashboard() {
                     )}
                     {activeSubTabId === "billing" && (
                         <div className="billing-settings">
+                            <div className="settings-header">
+                                <h3>Billing Settings</h3>
+                                {hasEditPermission('settings') && (
+                                    <button className="btn-primary" onClick={() => handleAddItem("billing")}>
+                                        <FiPlus /> Add Billing Entry
+                                    </button>
+                                )}
+                            </div>
                             <div className="billing-overview">
-                                <h3>Billing Overview</h3>
+                                <h3>Current Plan</h3>
                                 <div className="billing-cards">
                                     <div className="billing-card">
-                                        <h4>Current Plan</h4>
+                                        <h4>Plan Type</h4>
                                         <p>Professional</p>
                                         <button className="btn-secondary">Upgrade Plan</button>
                                     </div>
@@ -2860,120 +3118,150 @@ export default function Dashboard() {
                                 </div>
                             </div>
                             <div className="billing-history">
-                                <h3>Billing History</h3>
-                                <div className="data-table">
-                                    <table>
-                                        <thead>
-                                        <tr>
-                                            <th>Date</th>
-                                            <th>Description</th>
-                                            <th>Amount</th>
-                                            <th>Status</th>
-                                            <th>Actions</th>
-                                        </tr>
-                                        </thead>
-                                        <tbody>
-                                        <tr>
-                                            <td>Jun 15, 2023</td>
-                                            <td>Monthly Subscription</td>
-                                            <td>$99.00</td>
-                                            <td><span className="status-badge paid">Paid</span></td>
-                                            <td>
-                                                <div className="table-actions">
-                                                    <button className="btn-icon">
-                                                        <FiDownload />
-                                                    </button>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td>May 15, 2023</td>
-                                            <td>Monthly Subscription</td>
-                                            <td>$99.00</td>
-                                            <td><span className="status-badge paid">Paid</span></td>
-                                            <td>
-                                                <div className="table-actions">
-                                                    <button className="btn-icon">
-                                                        <FiDownload />
-                                                    </button>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                        </tbody>
-                                    </table>
+                                <div className="section-header">
+                                    <h3>Billing History</h3>
                                 </div>
+                                {billingHistory.length === 0 ? (
+                                    <div className="empty-state">
+                                        <p>No billing history available</p>
+                                        {hasEditPermission('settings') && (
+                                            <button className="btn-primary" onClick={() => handleAddItem("billing")}>
+                                                Add Billing Entry
+                                            </button>
+                                        )}
+                                    </div>
+                                ) : (
+                                    <div className="data-table">
+                                        <table>
+                                            <thead>
+                                            <tr>
+                                                <th>Date</th>
+                                                <th>Description</th>
+                                                <th>Amount</th>
+                                                <th>Status</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                            </thead>
+                                            <tbody>
+                                                {billingHistory.map((billing, index) => (
+                                                    <tr key={`${billing.date}-${index}`}>
+                                                        <td>{billing.date}</td>
+                                                        <td>{billing.description}</td>
+                                                        <td>{billing.amount}</td>
+                                                        <td><span className={`status-badge ${billing.status.toLowerCase()}`}>{billing.status}</span></td>
+                                                        <td>
+                                                            {hasEditPermission('settings') && (
+                                                                <div className="table-actions">
+                                                                    <button className="btn-icon" onClick={() => handleEditItem(billing, "billing")}>
+                                                                        <FiEdit />
+                                                                    </button>
+                                                                    <button className="btn-icon" onClick={() => handleDeleteItem(index, "billing")}>
+                                                                        <FiTrash2 />
+                                                                    </button>
+                                                                    <button className="btn-icon" onClick={() => handleDownload(billing, 'billing')}>
+                                                                        <FiDownload />
+                                                                    </button>
+                                                                </div>
+                                                            )}
+                                                        </td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                )}
                             </div>
                         </div>
                     )}
                     {activeSubTabId === "auditLogs" && (
                         <div className="audit-logs">
-                            <div className="logs-header">
+                            <div className="settings-header">
                                 <h3>Audit Logs</h3>
-                                <div className="logs-filters">
-                                    <div className="filter-group">
-                                        <label>Date Range:</label>
-                                        <select>
-                                            <option>Last 7 days</option>
-                                            <option>Last 30 days</option>
-                                            <option>Last 90 days</option>
-                                        </select>
-                                    </div>
-                                    <div className="filter-group">
-                                        <label>User:</label>
-                                        <select>
-                                            <option>All Users</option>
-                                            <option>You</option>
-                                        </select>
-                                    </div>
-                                    <div className="filter-group">
-                                        <label>Action:</label>
-                                        <select>
-                                            <option>All Actions</option>
-                                            <option>Login</option>
-                                            <option>Create</option>
-                                            <option>Update</option>
-                                            <option>Delete</option>
-                                        </select>
-                                    </div>
+                                {hasEditPermission('settings') && (
+                                    <button className="btn-primary" onClick={() => handleAddItem("auditLog")}>
+                                        <FiPlus /> Add Audit Log
+                                    </button>
+                                )}
+                            </div>
+                            <div className="logs-filters">
+                                <div className="filter-group">
+                                    <label>Date Range:</label>
+                                    <select>
+                                        <option>Last 7 days</option>
+                                        <option>Last 30 days</option>
+                                        <option>Last 90 days</option>
+                                    </select>
+                                </div>
+                                <div className="filter-group">
+                                    <label>User:</label>
+                                    <select>
+                                        <option>All Users</option>
+                                        <option>You</option>
+                                    </select>
+                                </div>
+                                <div className="filter-group">
+                                    <label>Action:</label>
+                                    <select>
+                                        <option>All Actions</option>
+                                        <option>Login</option>
+                                        <option>Create</option>
+                                        <option>Update</option>
+                                        <option>Delete</option>
+                                    </select>
                                 </div>
                             </div>
                             <div className="logs-list">
-                                <div className="data-table">
-                                    <table>
-                                        <thead>
-                                        <tr>
-                                            <th>Date & Time</th>
-                                            <th>User</th>
-                                            <th>Action</th>
-                                            <th>Details</th>
-                                            <th>IP Address</th>
-                                        </tr>
-                                        </thead>
-                                        <tbody>
-                                        <tr>
-                                            <td>Jun 20, 2023 10:30 AM</td>
-                                            <td>admin@example.com</td>
-                                            <td>Login</td>
-                                            <td>User logged in successfully</td>
-                                            <td>192.168.1.1</td>
-                                        </tr>
-                                        <tr>
-                                            <td>Jun 20, 2023 10:15 AM</td>
-                                            <td>admin@example.com</td>
-                                            <td>Create</td>
-                                            <td>Created new venture "Tech Startup"</td>
-                                            <td>192.168.1.1</td>
-                                        </tr>
-                                        <tr>
-                                            <td>Jun 19, 2023 4:45 PM</td>
-                                            <td>admin@example.com</td>
-                                            <td>Update</td>
-                                            <td>Updated settings for branding</td>
-                                            <td>192.168.1.1</td>
-                                        </tr>
-                                        </tbody>
-                                    </table>
-                                </div>
+                                {auditLogs.length === 0 ? (
+                                    <div className="empty-state">
+                                        <p>No audit logs available</p>
+                                        {hasEditPermission('settings') && (
+                                            <button className="btn-primary" onClick={() => handleAddItem("auditLog")}>
+                                                Add Audit Log
+                                            </button>
+                                        )}
+                                    </div>
+                                ) : (
+                                    <div className="data-table">
+                                        <table>
+                                            <thead>
+                                            <tr>
+                                                <th>Date & Time</th>
+                                                <th>User</th>
+                                                <th>Action</th>
+                                                <th>Details</th>
+                                                <th>IP Address</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                            </thead>
+                                            <tbody>
+                                                {auditLogs.map((log, index) => (
+                                                    <tr key={`${log.dateTime}-${index}`}>
+                                                        <td>{log.dateTime}</td>
+                                                        <td>{log.user}</td>
+                                                        <td>{log.action}</td>
+                                                        <td>{log.details}</td>
+                                                        <td>{log.ip}</td>
+                                                        <td>
+                                                            {hasEditPermission('settings') && (
+                                                                <div className="table-actions">
+                                                                    <button className="btn-icon" onClick={() => handleEditItem(log, "auditLog")}>
+                                                                        <FiEdit />
+                                                                    </button>
+                                                                    <button className="btn-icon" onClick={() => handleDeleteItem(index, "auditLog")}>
+                                                                        <FiTrash2 />
+                                                                    </button>
+                                                                    <button className="btn-icon" onClick={() => handleDownload(log, 'auditLog')}>
+                                                                        <FiDownload />
+                                                                    </button>
+                                                                </div>
+                                                            )}
+                                                        </td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                )}
                             </div>
                         </div>
                     )}
@@ -2981,7 +3269,7 @@ export default function Dashboard() {
             </div>
         );
     };
-
+    
     const renderContent = () => {
         // Check if user has permission to view this section
         if (!hasPermission(activeTab)) {
@@ -2995,7 +3283,7 @@ export default function Dashboard() {
                 </div>
             );
         }
-
+        
         switch (activeTab) {
             case "dashboard":
                 return renderDashboardHome();
@@ -3031,14 +3319,14 @@ export default function Dashboard() {
                 return renderDashboardHome();
         }
     };
-
+    
     return (
         <div className="dashboard-container">
             <div className="sidebar">
                 <div className="sidebar-header">
                     <div className="logo">
                         <img src="/logo.jpg" alt="Ecstasy Ventures" />
-                        <span>Ecstasy Ventures</span>
+                        <span>{settings.companyName}</span>
                     </div>
                     <p>Admin Portal</p>
                 </div>
@@ -4015,21 +4303,27 @@ export default function Dashboard() {
                                             </div>
                                             <div className="form-group">
                                                 <label>Primary Color</label>
-                                                <input
-                                                    type="color"
-                                                    name="primaryColor"
-                                                    defaultValue={settings.primaryColor || '#001f3f'}
-                                                    required
-                                                />
+                                                <div className="color-picker">
+                                                    <input
+                                                        type="color"
+                                                        name="primaryColor"
+                                                        defaultValue={settings.primaryColor || '#001f3f'}
+                                                        required
+                                                    />
+                                                    <span>{settings.primaryColor || '#001f3f'}</span>
+                                                </div>
                                             </div>
                                             <div className="form-group">
                                                 <label>Secondary Color</label>
-                                                <input
-                                                    type="color"
-                                                    name="secondaryColor"
-                                                    defaultValue={settings.secondaryColor || '#ff851b'}
-                                                    required
-                                                />
+                                                <div className="color-picker">
+                                                    <input
+                                                        type="color"
+                                                        name="secondaryColor"
+                                                        defaultValue={settings.secondaryColor || '#ff851b'}
+                                                        required
+                                                    />
+                                                    <span>{settings.secondaryColor || '#ff851b'}</span>
+                                                </div>
                                             </div>
                                         </>
                                     )}
@@ -4066,6 +4360,109 @@ export default function Dashboard() {
                                             </div>
                                         </>
                                     )}
+                                </>
+                            )}
+                            {newItem.type === "billing" && (
+                                <>
+                                    <div className="form-group">
+                                        <label>Date</label>
+                                        <input
+                                            type="date"
+                                            name="date"
+                                            defaultValue={editingItem ? editingItem.date : ''}
+                                            required
+                                        />
+                                    </div>
+                                    <div className="form-group">
+                                        <label>Description</label>
+                                        <input
+                                            type="text"
+                                            name="description"
+                                            defaultValue={editingItem ? editingItem.description : ''}
+                                            placeholder="Enter description"
+                                            required
+                                        />
+                                    </div>
+                                    <div className="form-group">
+                                        <label>Amount</label>
+                                        <input
+                                            type="text"
+                                            name="amount"
+                                            defaultValue={editingItem ? editingItem.amount : ''}
+                                            placeholder="Enter amount"
+                                            required
+                                        />
+                                    </div>
+                                    <div className="form-group">
+                                        <label>Status</label>
+                                        <select
+                                            name="status"
+                                            defaultValue={editingItem ? editingItem.status : ''}
+                                            required
+                                        >
+                                            <option value="">Select status</option>
+                                            <option value="Paid">Paid</option>
+                                            <option value="Pending">Pending</option>
+                                            <option value="Failed">Failed</option>
+                                        </select>
+                                    </div>
+                                </>
+                            )}
+                            {newItem.type === "auditLog" && (
+                                <>
+                                    <div className="form-group">
+                                        <label>Date & Time</label>
+                                        <input
+                                            type="datetime-local"
+                                            name="dateTime"
+                                            defaultValue={editingItem ? editingItem.dateTime : ''}
+                                            required
+                                        />
+                                    </div>
+                                    <div className="form-group">
+                                        <label>User</label>
+                                        <input
+                                            type="text"
+                                            name="user"
+                                            defaultValue={editingItem ? editingItem.user : ''}
+                                            placeholder="Enter user"
+                                            required
+                                        />
+                                    </div>
+                                    <div className="form-group">
+                                        <label>Action</label>
+                                        <select
+                                            name="action"
+                                            defaultValue={editingItem ? editingItem.action : ''}
+                                            required
+                                        >
+                                            <option value="">Select action</option>
+                                            <option value="Login">Login</option>
+                                            <option value="Logout">Logout</option>
+                                            <option value="Create">Create</option>
+                                            <option value="Update">Update</option>
+                                            <option value="Delete">Delete</option>
+                                        </select>
+                                    </div>
+                                    <div className="form-group">
+                                        <label>Details</label>
+                                        <textarea
+                                            name="details"
+                                            defaultValue={editingItem ? editingItem.details : ''}
+                                            placeholder="Enter details"
+                                            required
+                                        ></textarea>
+                                    </div>
+                                    <div className="form-group">
+                                        <label>IP Address</label>
+                                        <input
+                                            type="text"
+                                            name="ip"
+                                            defaultValue={editingItem ? editingItem.ip : ''}
+                                            placeholder="Enter IP address"
+                                            required
+                                        />
+                                    </div>
                                 </>
                             )}
                             {newItem.type === "approval" && (
@@ -4114,7 +4511,7 @@ export default function Dashboard() {
                                     </div>
                                 </>
                             )}
-                            {!["event", "task", "venture", "founder", "termSheet", "content", "invoice", "contract", "document", "investor", "ticket", "automation", "user", "setting", "approval"].includes(newItem.type) && (
+                            {!["event", "task", "venture", "founder", "termSheet", "content", "invoice", "contract", "document", "investor", "ticket", "automation", "user", "setting", "billing", "auditLog", "approval"].includes(newItem.type) && (
                                 <>
                                     <div className="form-group">
                                         <label>Name</label>
