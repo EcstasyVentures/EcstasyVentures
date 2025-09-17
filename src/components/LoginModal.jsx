@@ -97,9 +97,6 @@ export default function LoginModal({ onClose }) {
                     </button>
                 </form>
                 <div className="login-help">
-                    <p><strong>Demo Accounts:</strong></p>
-                    <p><strong>Admin:</strong> superadmin / super123</p>
-                    <p><strong>Founder:</strong> john@startup.com / startup123</p>
                 </div>
             </div>
         </div>
