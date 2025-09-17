@@ -76,6 +76,8 @@ export default function Dashboard() {
     const [newItem, setNewItem] = useState({});
     const [editingItem, setEditingItem] = useState(null);
     const [showKPIModal, setShowKPIModal] = useState(false);
+    const [searchQuery, setSearchQuery] = useState("");
+    const [searchResults, setSearchResults] = useState({ founders: [], ventures: [], tasks: [] });
     
     // New state variables for all sections
     const [termSheets, setTermSheets] = useState([]);
@@ -166,9 +168,10 @@ export default function Dashboard() {
     };
     
     // Function to check if user has edit permission for a section
+    // Align edit permissions with view permissions: if a user can access a section,
+    // they can also create/update/delete within that section.
     const hasEditPermission = (section) => {
-        if (!user || !user.role) return false;
-        return editPermissions[user.role]?.includes(section) || false;
+        return hasPermission(section);
     };
     
     // Function to generate unique ID
@@ -183,12 +186,19 @@ export default function Dashboard() {
         const username = localStorage.getItem("username");
         if (!username) return;
         try {
+            // Exclude globally managed collections to avoid overwriting centralized DB
+            const {
+                founders: _omitFounders,
+                ventures: _omitVentures,
+                documents: _omitDocuments,
+                ...rest
+            } = stateRef.current || {};
             const response = await fetch(`http://localhost:5000/api/user-data/${username}`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify(stateRef.current),
+                body: JSON.stringify(rest),
             });
             const result = await response.json();
             if (!result.success) {
@@ -243,6 +253,84 @@ export default function Dashboard() {
         contracts, complianceCalendar, documents, investors, tickets, reports, automations, teams,
         settings, notifications, events, activeSubTab, billingHistory, auditLogs, saveUserData]);
     
+    // Function to fetch notifications from database
+    const fetchNotifications = async () => {
+        try {
+            const response = await fetch('http://localhost:5000/api/notifications');
+            const notifications = await response.json();
+            setNotifications(notifications);
+        } catch (error) {
+            console.error('Error fetching notifications:', error);
+        }
+    };
+
+    // Fetch centralized data from server for permitted users
+    const fetchFoundersFromDB = async () => {
+        try {
+            const response = await fetch('http://localhost:5000/api/founders');
+            if (response.ok) {
+                const data = await response.json();
+                setFounders(data || []);
+            }
+        } catch (error) {
+            console.error('Error fetching founders:', error);
+        }
+    };
+
+    const fetchVenturesFromDB = async () => {
+        try {
+            const response = await fetch('http://localhost:5000/api/ventures');
+            if (response.ok) {
+                const data = await response.json();
+                setVentures(data || []);
+            }
+        } catch (error) {
+            console.error('Error fetching ventures:', error);
+        }
+    };
+
+    const fetchDocumentsFromDB = async () => {
+        try {
+            const response = await fetch('http://localhost:5000/api/documents');
+            if (response.ok) {
+                const data = await response.json();
+                setDocuments(data || []);
+            }
+        } catch (error) {
+            console.error('Error fetching documents:', error);
+        }
+    };
+
+    // Function to mark notification as read
+    const markNotificationAsRead = async (notificationId) => {
+        try {
+            await fetch(`http://localhost:5000/api/notifications/${notificationId}/read`, {
+                method: 'PUT'
+            });
+            setNotifications(notifications.map(notif =>
+                notif.id === notificationId ? { ...notif, read: true } : notif
+            ));
+        } catch (error) {
+            console.error('Error marking notification as read:', error);
+        }
+    };
+
+    // Function to search across all data
+    const handleSearch = async (query) => {
+        if (!query.trim()) {
+            setSearchResults({ founders: [], ventures: [], tasks: [] });
+            return;
+        }
+        
+        try {
+            const response = await fetch(`http://localhost:5000/api/search?q=${encodeURIComponent(query)}`);
+            const results = await response.json();
+            setSearchResults(results);
+        } catch (error) {
+            console.error('Error searching:', error);
+        }
+    };
+
     // Function to fetch user data from backend
     const fetchUserData = async () => {
         const username = localStorage.getItem("username");
@@ -253,8 +341,7 @@ export default function Dashboard() {
             // Set all state variables from userData
             setKpiData(userData.kpiData || {});
             setApprovals(userData.approvals || []);
-            setVentures(userData.ventures || []);
-            setFounders(userData.founders || []);
+            // Do not overwrite centralized founders/ventures with per-user blob
             setTasks(userData.tasks || []);
             setTermSheets(userData.termSheets || []);
             setCapTable(userData.capTable || []);
@@ -268,7 +355,7 @@ export default function Dashboard() {
             setProfitLoss(userData.profitLoss || {});
             setContracts(userData.contracts || []);
             setComplianceCalendar(userData.complianceCalendar || []);
-            setDocuments(userData.documents || []);
+            // Do not overwrite centralized documents with per-user blob
             setInvestors(userData.investors || []);
             setTickets(userData.tickets || []);
             setReports(userData.reports || []);
@@ -335,12 +422,31 @@ export default function Dashboard() {
     useEffect(() => {
         const username = localStorage.getItem("username");
         const role = localStorage.getItem("role");
+        const permissions = JSON.parse(localStorage.getItem("permissions") || "[]");
+        
         if (!username || !role) {
             navigate("/");
             return;
         }
-        setUser({ username, role });
+        
+        setUser({ username, role, permissions });
         fetchUserData();
+        fetchNotifications();
+        // Load centralized data for permitted users
+        if (role && (hasPermission('founders') || permissions.includes('founders'))) {
+            fetchFoundersFromDB();
+        }
+        if (role && (hasPermission('ventures') || permissions.includes('ventures'))) {
+            fetchVenturesFromDB();
+        }
+        if (role && (hasPermission('documents') || permissions.includes('documents'))) {
+            fetchDocumentsFromDB();
+        }
+        
+        // Set up interval to fetch notifications every 30 seconds
+        const notificationInterval = setInterval(fetchNotifications, 30000);
+        
+        return () => clearInterval(notificationInterval);
     }, [navigate]);
     
     const handleLogout = () => {
@@ -495,10 +601,28 @@ export default function Dashboard() {
                     }
                     break;
                 case 'venture':
-                    setVentures(ventures.filter(venture => venture.id !== id));
+                    try {
+                        const resp = await fetch(`http://localhost:5000/api/ventures/${id}`, { method: 'DELETE' });
+                        if (resp.ok) {
+                            await fetchVenturesFromDB();
+                        } else {
+                            console.error('Failed to delete venture');
+                        }
+                    } catch (err) {
+                        console.error('Error deleting venture:', err);
+                    }
                     break;
                 case 'founder':
-                    setFounders(founders.filter(founder => founder.id !== id));
+                    try {
+                        const resp = await fetch(`http://localhost:5000/api/founders/${id}`, { method: 'DELETE' });
+                        if (resp.ok) {
+                            await fetchFoundersFromDB();
+                        } else {
+                            console.error('Failed to delete founder');
+                        }
+                    } catch (err) {
+                        console.error('Error deleting founder:', err);
+                    }
                     break;
                 case 'termSheet':
                     setTermSheets(termSheets.filter(sheet => sheet.id !== id));
@@ -617,9 +741,7 @@ export default function Dashboard() {
     };
     
     const markAsRead = (id) => {
-        setNotifications(notifications.map(notif =>
-            notif.id === id ? { ...notif, read: true } : notif
-        ));
+        markNotificationAsRead(id);
     };
     
     const handleFormSubmit = async (e) => {
@@ -668,8 +790,7 @@ export default function Dashboard() {
                 }
                 break;
             case 'task':
-                const newTask = {
-                    id: editingItem ? editingItem.id : generateUniqueId(),
+                const taskData = {
                     title: data.title,
                     description: data.description,
                     assignee: data.assignee,
@@ -678,83 +799,102 @@ export default function Dashboard() {
                     createdBy: editingItem ? editingItem.createdBy : user.username
                 };
                 
-                // Update current user's tasks
-                if (editingItem) {
-                    setTasks(tasks.map(task => task.id === editingItem.id ? newTask : task));
-                } else {
-                    setTasks([...tasks, newTask]);
-                }
-                
-                // If the assignee is not the current user, update the assignee's data
-                if (data.assignee !== user.username) {
-                    // For new task or when the assignee changes in edit
-                    if (!editingItem || (editingItem && editingItem.assignee !== data.assignee)) {
-                        // Get the assignee's current data
-                        const assigneeData = await getUserData(data.assignee);
-                        if (assigneeData) {
-                            // Add the task to the assignee's tasks array
-                            const updatedTasks = [...(assigneeData.tasks || []), newTask];
-                            // Update the assignee's data
-                            await updateUserData(data.assignee, { ...assigneeData, tasks: updatedTasks });
-                            
-                            // Also add a notification to the assignee if it's a new task
-                            if (!editingItem) {
-                                const newNotification = {
-                                    id: generateUniqueId(),
-                                    category: 'Task',
-                                    message: `You have been assigned a new task: ${data.title} by ${user.username}`,
-                                    time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-                                    read: false
-                                };
-                                // Add to assignee's notifications
-                                const updatedNotifications = [...(assigneeData.notifications || []), newNotification];
-                                await updateUserData(data.assignee, { ...assigneeData, notifications: updatedNotifications });
-                            }
+                try {
+                    if (editingItem) {
+                        const response = await fetch(`http://localhost:5000/api/tasks/${editingItem.id}`, {
+                            method: 'PUT',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(taskData)
+                        });
+                        if (response.ok) {
+                            const updatedTask = await response.json();
+                            setTasks(tasks.map(task => task.id === editingItem.id ? updatedTask : task));
+                        }
+                    } else {
+                        const response = await fetch('http://localhost:5000/api/tasks', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(taskData)
+                        });
+                        if (response.ok) {
+                            const newTask = await response.json();
+                            setTasks([...tasks, newTask]);
                         }
                     }
-                }
-                
-                // If editing and the assignee changed, remove the task from the old assignee's tasks
-                if (editingItem && editingItem.assignee !== data.assignee) {
-                    // Only if the old assignee is not the current user (because we already updated the current user's tasks)
-                    if (editingItem.assignee !== user.username) {
-                        const oldAssigneeData = await getUserData(editingItem.assignee);
-                        if (oldAssigneeData) {
-                            const updatedOldTasks = oldAssigneeData.tasks.filter(task => task.id !== editingItem.id);
-                            await updateUserData(editingItem.assignee, { ...oldAssigneeData, tasks: updatedOldTasks });
-                        }
-                    }
+                } catch (error) {
+                    console.error('Error saving task:', error);
                 }
                 break;
             case 'venture':
-                const newVenture = {
-                    id: editingItem ? editingItem.id : generateUniqueId(),
+                const ventureData = {
                     name: data.name,
                     industry: data.industry,
                     stage: data.stage,
                     revenue: data.revenue,
                     risk: data.risk
                 };
-                if (editingItem) {
-                    setVentures(ventures.map(venture => venture.id === editingItem.id ? newVenture : venture));
-                } else {
-                    setVentures([...ventures, newVenture]);
+                
+                try {
+                    if (editingItem) {
+                        const response = await fetch(`http://localhost:5000/api/ventures/${editingItem.id}`, {
+                            method: 'PUT',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(ventureData)
+                        });
+                        if (response.ok) {
+                            const updatedVenture = await response.json();
+                            setVentures(ventures.map(venture => venture.id === editingItem.id ? updatedVenture : venture));
+                        }
+                    } else {
+                        const response = await fetch('http://localhost:5000/api/ventures', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(ventureData)
+                        });
+                        if (response.ok) {
+                            const newVenture = await response.json();
+                            setVentures([...ventures, newVenture]);
+                        }
+                    }
+                } catch (error) {
+                    console.error('Error saving venture:', error);
                 }
                 break;
             case 'founder':
-                const newFounder = {
-                    id: editingItem ? editingItem.id : generateUniqueId(),
+                const founderData = {
                     name: data.name,
                     company: data.company,
                     email: data.email,
                     phone: data.phone,
-                    kyc: data.kyc,
-                    contracts: editingItem ? editingItem.contracts : 0
+                    kyc: data.kyc
                 };
-                if (editingItem) {
-                    setFounders(founders.map(founder => founder.id === editingItem.id ? newFounder : founder));
-                } else {
-                    setFounders([...founders, newFounder]);
+                
+                try {
+                    if (editingItem) {
+                        const response = await fetch(`http://localhost:5000/api/founders/${editingItem.id}`, {
+                            method: 'PUT',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(founderData)
+                        });
+                        if (response.ok) {
+                            const updatedFounder = await response.json();
+                            setFounders(founders.map(founder => founder.id === editingItem.id ? updatedFounder : founder));
+                            await fetchFoundersFromDB();
+                        }
+                    } else {
+                        const response = await fetch('http://localhost:5000/api/founders', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(founderData)
+                        });
+                        if (response.ok) {
+                            const newFounder = await response.json();
+                            setFounders([...founders, newFounder]);
+                            await fetchFoundersFromDB();
+                        }
+                    }
+                } catch (error) {
+                    console.error('Error saving founder:', error);
                 }
                 break;
             case 'termSheet':
@@ -819,17 +959,37 @@ export default function Dashboard() {
                 }
                 break;
             case 'document':
-                const newDocument = {
-                    id: editingItem ? editingItem.id : generateUniqueId(),
-                    name: data.name,
-                    category: data.category,
-                    accessLevel: data.accessLevel,
-                    type: data.type || 'document'
-                };
-                if (editingItem) {
-                    setDocuments(documents.map(document => document.id === editingItem.id ? newDocument : document));
-                } else {
-                    setDocuments([...documents, newDocument]);
+                try {
+                    const docPayload = {
+                        name: data.name,
+                        category: data.category,
+                        accessLevel: data.accessLevel,
+                        type: data.type || 'document',
+                        uploadedBy: user?.username || ''
+                    };
+                    if (editingItem) {
+                        const response = await fetch(`http://localhost:5000/api/documents/${editingItem.id}`, {
+                            method: 'PUT',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(docPayload)
+                        });
+                        if (response.ok) {
+                            const updatedDoc = await response.json();
+                            setDocuments(documents.map(document => document.id === editingItem.id ? updatedDoc : document));
+                        }
+                    } else {
+                        const response = await fetch('http://localhost:5000/api/documents', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(docPayload)
+                        });
+                        if (response.ok) {
+                            const newDoc = await response.json();
+                            setDocuments([...documents, newDoc]);
+                        }
+                    }
+                } catch (error) {
+                    console.error('Error saving document:', error);
                 }
                 break;
             case 'investor':
@@ -1097,7 +1257,7 @@ export default function Dashboard() {
                             approvals.map(item => (
                                 <div key={item.id} className="approval-item">
                                     <div className="approval-info">
-                                        <span className={`approval-type ${item.type.toLowerCase()}`}>{item.type}</span>
+                                        <span className={`approval-type ${(item.type || 'general').toLowerCase()}`}>{item.type || 'General'}</span>
                                         <h3>{item.title}</h3>
                                         <p>Due: {item.dueDate}</p>
                                         <p>Requested by: {item.requestedBy}</p>
@@ -1137,9 +1297,13 @@ export default function Dashboard() {
                         ) : (
                             notifications.map(notif => (
                                 <div key={notif.id} className={`notification-item ${notif.read ? 'read' : 'unread'}`}>
-                                    <span className={`notif-category ${notif.category.toLowerCase()}`}>{notif.category}</span>
-                                    <p>{notif.message}</p>
-                                    <span className="notif-time">{notif.time}</span>
+                                    <span className={`notif-category ${(notif.type || 'general').toLowerCase()}`}>
+                                        {(notif.type || 'general').replace('_', ' ')}
+                                    </span>
+                                    <p>{notif.message || 'No message'}</p>
+                                    <span className="notif-time">
+                                        {notif.timestamp ? new Date(notif.timestamp).toLocaleString() : 'Unknown time'}
+                                    </span>
                                     {!notif.read && (
                                         <button className="btn-text" onClick={() => markAsRead(notif.id)}>
                                             Mark as Read
@@ -1266,8 +1430,8 @@ export default function Dashboard() {
                                             <p><span>Industry:</span> {venture.industry}</p>
                                             <p><span>Revenue:</span> {venture.revenue}</p>
                                             <p><span>Risk:</span>
-                                                <span className={`risk-badge ${venture.risk.toLowerCase()}`}>
-                                                    {venture.risk}
+                                                <span className={`risk-badge ${(venture.risk || 'medium').toLowerCase()}`}>
+                                                    {venture.risk || 'Medium'}
                                                 </span>
                                             </p>
                                         </div>
@@ -1298,7 +1462,15 @@ export default function Dashboard() {
                 <div className="header-actions">
                     <div className="search-bar">
                         <FiSearch />
-                        <input type="text" placeholder="Search founders..." />
+                        <input 
+                            type="text" 
+                            placeholder="Search founders..." 
+                            value={searchQuery}
+                            onChange={(e) => {
+                                setSearchQuery(e.target.value);
+                                handleSearch(e.target.value);
+                            }}
+                        />
                     </div>
                     {hasEditPermission('founders') && (
                         <button className="btn-primary" onClick={() => handleAddItem("founder")}>
@@ -1320,10 +1492,10 @@ export default function Dashboard() {
                     </tr>
                     </thead>
                     <tbody>
-                    {founders.length === 0 ? (
+                    {(searchQuery ? searchResults.founders : founders).length === 0 ? (
                         <tr>
                             <td colSpan="6" className="empty-table">
-                                <p>No founders found</p>
+                                <p>{searchQuery ? 'No founders found matching your search' : 'No founders found'}</p>
                                 {hasEditPermission('founders') && (
                                     <button className="btn-primary" onClick={() => handleAddItem("founder")}>
                                         Add Founder
@@ -1332,18 +1504,26 @@ export default function Dashboard() {
                             </td>
                         </tr>
                     ) : (
-                        founders.map(founder => (
-                            <tr key={founder.id}>
+                        (searchQuery ? searchResults.founders : founders).map(founder => (
+                            <tr key={founder.id} className={searchQuery ? 'search-highlight' : ''}>
                                 <td className="founder-name">
                                     <div className="founder-avatar">
                                         {founder.name.charAt(0)}
                                     </div>
-                                    {founder.name}
+                                    <span dangerouslySetInnerHTML={{
+                                        __html: searchQuery ? 
+                                            founder.name.replace(new RegExp(`(${searchQuery})`, 'gi'), '<mark>$1</mark>') : 
+                                            founder.name
+                                    }} />
                                 </td>
-                                <td>{founder.company}</td>
+                                <td dangerouslySetInnerHTML={{
+                                    __html: searchQuery ? 
+                                        founder.company.replace(new RegExp(`(${searchQuery})`, 'gi'), '<mark>$1</mark>') : 
+                                        founder.company
+                                }} />
                                 <td>
-                                    <span className={`status-badge ${founder.kyc.toLowerCase()}`}>
-                                        {founder.kyc}
+                                    <span className={`status-badge ${(founder.kyc || 'pending').toLowerCase()}`}>
+                                        {founder.kyc || 'Pending'}
                                     </span>
                                 </td>
                                 <td>{founder.contracts}</td>
@@ -1392,7 +1572,7 @@ export default function Dashboard() {
                             <h3>{status}</h3>
                             <div className="task-list">
                                 {tasks
-                                    .filter(task => task.status === status.toLowerCase().replace(' ', ''))
+                                    .filter(task => task.status === (status || '').toLowerCase().replace(' ', ''))
                                     .filter(task => task.assignee === currentUser || task.createdBy === currentUser)
                                     .map(task => (
                                         <div key={task.id} className="task-card">
@@ -1424,7 +1604,7 @@ export default function Dashboard() {
                                         </div>
                                     ))}
                                 {tasks
-                                    .filter(task => task.status === status.toLowerCase().replace(' ', ''))
+                                    .filter(task => task.status === (status || '').toLowerCase().replace(' ', ''))
                                     .filter(task => task.assignee === currentUser || task.createdBy === currentUser)
                                     .length === 0 && (
                                     <div className="empty-column">
@@ -1507,7 +1687,7 @@ export default function Dashboard() {
                                                 <td>{sheet.title}</td>
                                                 <td>{sheet.company}</td>
                                                 <td>{sheet.amount}</td>
-                                                <td><span className={`status-badge ${sheet.status.toLowerCase()}`}>{sheet.status}</span></td>
+                                                <td><span className={`status-badge ${(sheet.status || 'pending').toLowerCase()}`}>{sheet.status || 'Pending'}</span></td>
                                                 <td>
                                                     {hasEditPermission('deals') && (
                                                         <div className="table-actions">
@@ -2349,7 +2529,7 @@ export default function Dashboard() {
                                                 <tr key={`${investor.name}-${index}`}>
                                                     <td>{investor.name}</td>
                                                     <td>{investor.firm}</td>
-                                                    <td><span className={`status-badge ${investor.stage?.toLowerCase()}`}>{investor.stage}</span></td>
+                                                    <td><span className={`status-badge ${(investor.stage || 'prospect').toLowerCase()}`}>{investor.stage || 'Prospect'}</span></td>
                                                     <td>{investor.email}</td>
                                                     <td>{investor.phone}</td>
                                                     <td>
@@ -2409,7 +2589,7 @@ export default function Dashboard() {
                                                 <tr key={`${mentor.name}-${index}`}>
                                                     <td>{mentor.name}</td>
                                                     <td>{mentor.expertise}</td>
-                                                    <td><span className={`status-badge ${mentor.availability?.toLowerCase()}`}>{mentor.availability}</span></td>
+                                                    <td><span className={`status-badge ${(mentor.availability || 'available').toLowerCase()}`}>{mentor.availability || 'Available'}</span></td>
                                                     <td>{mentor.email}</td>
                                                     <td>{mentor.phone}</td>
                                                     <td>
