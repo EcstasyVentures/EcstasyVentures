@@ -11,11 +11,13 @@ import Contact from "./components/Contact";
 import Terms from "./components/Terms";
 import Footer from "./components/Footer";
 import Dashboard from "./components/Dashboard";
+import FounderDashboard from "./components/FounderDashboard"; // ✅ Added import
 import "./styles.css";
 
 function Layout({ children }) {
     const location = useLocation();
-    const hideHeaderFooter = location.pathname === "/dashboard";
+    const hideHeaderFooter = 
+        location.pathname === "/dashboard" || location.pathname === "/founder-dashboard"; // ✅ Hide for both dashboards
 
     return (
         <>
@@ -49,8 +51,9 @@ export default function App() {
                     <Route path="/contact" element={<Contact />} />
                     <Route path="/terms" element={<Terms />} />
 
-                    {/* Dashboard (no header/footer) */}
+                    {/* Dashboards (no header/footer) */}
                     <Route path="/dashboard" element={<Dashboard />} />
+                    <Route path="/founder-dashboard" element={<FounderDashboard />} /> {/* ✅ Added route */}
                 </Routes>
             </Layout>
         </Router>

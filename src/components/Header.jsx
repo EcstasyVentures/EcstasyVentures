@@ -54,7 +54,7 @@ export default function Header() {
                         className="admin-btn"
                         onClick={() => setShowLogin(true)}
                     >
-                        Admin Login
+                        Login
                     </button>
                     <button
                         className="theme-toggle"

@@ -4400,3 +4400,467 @@ body.dark-theme .error-message {
     background-color: #721c24;
     color: #f8d7da;
 }
+/* Founder Dashboard Specific Styles */
+.founder-dashboard {
+    --founder-primary: #2c3e50;
+    --founder-secondary: #3498db;
+    --founder-accent: #e74c3c;
+    --founder-success: #27ae60;
+    --founder-warning: #f39c12;
+    --founder-background: #ecf0f1;
+    --founder-card-bg: #ffffff;
+    --founder-text: #2c3e50;
+    --founder-text-light: #7f8c8d;
+}
+
+.founder-sidebar {
+    background: linear-gradient(135deg, var(--founder-primary) 0%, #34495e 100%);
+}
+
+.founder-sidebar .sidebar-header {
+    background: rgba(255, 255, 255, 0.1);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.founder-sidebar .company-info {
+    font-size: 0.8rem;
+    opacity: 0.8;
+    margin-top: 5px;
+}
+
+.founder-sidebar .nav-item.active {
+    background-color: var(--founder-secondary);
+    border-left: 4px solid var(--founder-accent);
+}
+
+.founder-topbar {
+    background: var(--founder-card-bg);
+    border-bottom: 1px solid #e0e6ed;
+}
+
+.founder-content {
+    background: var(--founder-background);
+}
+
+/* Founder KPI Cards */
+.founder-dashboard .kpi-card {
+    background: var(--founder-card-bg);
+    border: 1px solid #e0e6ed;
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+}
+
+.founder-dashboard .kpi-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+}
+
+.founder-dashboard .kpi-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    color: white;
+}
+
+.founder-dashboard .kpi-icon.revenue {
+    background: linear-gradient(135deg, #27ae60, #2ecc71);
+}
+
+.founder-dashboard .kpi-icon.expenses {
+    background: linear-gradient(135deg, #e74c3c, #c0392b);
+}
+
+.founder-dashboard .kpi-icon.runway {
+    background: linear-gradient(135deg, #3498db, #2980b9);
+}
+
+.founder-dashboard .kpi-icon.customers {
+    background: linear-gradient(135deg, #9b59b6, #8e44ad);
+}
+
+.founder-dashboard .kpi-icon.mrr {
+    background: linear-gradient(135deg, #f39c12, #d68910);
+}
+
+/* Founder Milestones */
+.milestones-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.milestone-item {
+    background: var(--founder-card-bg);
+    border: 1px solid #e0e6ed;
+    border-radius: 12px;
+    padding: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    transition: all 0.3s ease;
+}
+
+.milestone-item:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.milestone-info h4 {
+    color: var(--founder-primary);
+    margin-bottom: 8px;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.milestone-info p {
+    color: var(--founder-text-light);
+    margin-bottom: 4px;
+}
+
+.milestone-actions {
+    display: flex;
+    gap: 8px;
+}
+
+/* Founder Tables */
+.investors-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--founder-card-bg);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+}
+
+.investors-table th {
+    background: var(--founder-primary);
+    color: white;
+    padding: 16px;
+    text-align: left;
+    font-weight: 600;
+}
+
+.investors-table td {
+    padding: 16px;
+    border-bottom: 1px solid #e0e6ed;
+}
+
+.investors-table tr:hover {
+    background: #f8f9fa;
+}
+
+/* Founder Documents */
+.documents-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 24px;
+}
+
+.document-category {
+    background: var(--founder-card-bg);
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    overflow: hidden;
+}
+
+.document-category h3 {
+    background: var(--founder-primary);
+    color: white;
+    padding: 16px 20px;
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.document-list {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.document-item {
+    display: flex;
+    align-items: center;
+    padding: 12px;
+    border: 1px solid #e0e6ed;
+    border-radius: 8px;
+    background: #f8f9fa;
+    transition: all 0.3s ease;
+}
+
+.document-item:hover {
+    background: #e8f4f8;
+    border-color: var(--founder-secondary);
+}
+
+.document-icon {
+    width: 40px;
+    height: 40px;
+    background: var(--founder-secondary);
+    color: white;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 12px;
+}
+
+.document-info h4 {
+    color: var(--founder-primary);
+    margin-bottom: 4px;
+}
+
+.document-info p {
+    color: var(--founder-text-light);
+    font-size: 14px;
+}
+
+/* Founder Tasks */
+.tasks-board {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 24px;
+}
+
+.task-column {
+    background: var(--founder-card-bg);
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+}
+
+.task-column h3 {
+    color: var(--founder-primary);
+    margin-bottom: 16px;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.task-card {
+    background: #f8f9fa;
+    border: 1px solid #e0e6ed;
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 12px;
+    transition: all 0.3s ease;
+}
+
+.task-card:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.task-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 12px;
+}
+
+.task-header h4 {
+    color: var(--founder-primary);
+    margin: 0;
+    font-size: 16px;
+}
+
+.task-details p {
+    color: var(--founder-text-light);
+    margin-bottom: 8px;
+    font-size: 14px;
+}
+
+.task-status {
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 500;
+    text-transform: uppercase;
+}
+
+.task-status.not-started {
+    background: #e0e0e0;
+    color: #666;
+}
+
+.task-status.in-progress {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.task-status.completed {
+    background: #d4edda;
+    color: #155724;
+}
+
+/* Founder Metrics */
+.metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 24px;
+}
+
+.metric-card {
+    background: var(--founder-card-bg);
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+}
+
+.metric-card h3 {
+    color: var(--founder-primary);
+    margin-bottom: 16px;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.metric-chart {
+    height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Founder Modal */
+.founder-modal {
+    background: var(--founder-card-bg);
+    border-radius: 16px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+}
+
+.founder-modal h2 {
+    color: var(--founder-primary);
+    margin-bottom: 24px;
+}
+
+.founder-modal .form-group label {
+    color: var(--founder-primary);
+    font-weight: 600;
+}
+
+.founder-modal input,
+.founder-modal textarea,
+.founder-modal select {
+    border: 1px solid #e0e6ed;
+    border-radius: 8px;
+    padding: 12px;
+    font-size: 14px;
+}
+
+.founder-modal input:focus,
+.founder-modal textarea:focus,
+.founder-modal select:focus {
+    border-color: var(--founder-secondary);
+    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+}
+
+.founder-modal .btn-primary {
+    background: linear-gradient(135deg, var(--founder-secondary), #2980b9);
+    border: none;
+    border-radius: 8px;
+    padding: 12px 24px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.founder-modal .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(52, 152, 219, 0.3);
+}
+
+/* Status Badges */
+.status-badge {
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 500;
+    text-transform: uppercase;
+}
+
+.status-badge.pre-seed {
+    background: #e8f5e8;
+    color: #2e7d32;
+}
+
+.status-badge.seed {
+    background: #e3f2fd;
+    color: #1976d2;
+}
+
+.status-badge.series-a {
+    background: #fff3e0;
+    color: #f57c00;
+}
+
+.status-badge.series-b {
+    background: #fce4ec;
+    color: #c2185b;
+}
+
+.status-badge.initial-contact {
+    background: #e0e0e0;
+    color: #616161;
+}
+
+.status-badge.due-diligence {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.status-badge.term-sheet {
+    background: #cce5ff;
+    color: #004085;
+}
+
+.status-badge.committed {
+    background: #d4edda;
+    color: #155724;
+}
+
+/* Loading States */
+.loading-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 50vh;
+    padding: 40px;
+}
+
+.loading-spinner {
+    border: 4px solid rgba(0, 0, 0, 0.1);
+    border-radius: 50%;
+    border-top: 4px solid var(--founder-secondary);
+    width: 40px;
+    height: 40px;
+    animation: spin 1s linear infinite;
+    margin-bottom: 20px;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .founder-dashboard .dashboard-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .founder-dashboard .tasks-board {
+        grid-template-columns: 1fr;
+    }
+    
+    .founder-dashboard .metrics-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .founder-dashboard .documents-grid {
+        grid-template-columns: 1fr;
+    }
+}

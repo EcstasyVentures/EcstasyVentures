@@ -5,30 +5,61 @@ import { useNavigate } from "react-router-dom";
 export default function LoginModal({ onClose }) {
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
+    const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        setLoading(true);
+
         try {
-            const res = await fetch("http://localhost:5000/login", {
+            // 🎯 FIRST: Try Admin Login
+            const adminRes = await fetch("http://localhost:5000/login", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ username, password }),
             });
-            const data = await res.json();
-            if (data.success) {
-                alert("✅ Login Successful!");
-                // Save user info in localStorage
-                localStorage.setItem("username", data.username);
-                localStorage.setItem("role", data.role);
-                localStorage.setItem("permissions", JSON.stringify(data.permissions));
+            const adminData = await adminRes.json();
+
+            if (adminData.success) {
+                // ✅ Admin Login Successful
+                localStorage.setItem("username", adminData.username);
+                localStorage.setItem("role", adminData.role);
+                localStorage.setItem("permissions", JSON.stringify(adminData.permissions));
+                alert("✅ Admin Login Successful!");
                 onClose();
                 navigate("/dashboard");
-            } else {
-                alert("❌ " + data.message);
+                return;
             }
+
+            // 🎯 SECOND: Try Founder Login (treat username as email)
+            const founderRes = await fetch("http://localhost:5000/api/founder-login", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ email: username, password }), // username is email for founders
+            });
+            const founderData = await founderRes.json();
+
+            if (founderData && founderData.success) {
+                // ✅ Founder Login Successful
+                localStorage.setItem("founderId", founderData.founderId);
+                localStorage.setItem("founderName", founderData.name);
+                localStorage.setItem("username", founderData.name); // For consistency
+                localStorage.setItem("role", "founder");
+                alert("✅ Founder Login Successful!");
+                onClose();
+                navigate("/founder-dashboard");
+                return;
+            }
+
+            // ❌ Both failed
+            alert("❌ Invalid credentials. Please check your username/email and password.");
+
         } catch (err) {
             alert("⚠️ Server error, try again later");
+            console.error("Login error:", err);
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -36,13 +67,16 @@ export default function LoginModal({ onClose }) {
         <div className="modal-overlay">
             <div className="modal-container">
                 <button className="close-btn" onClick={onClose}>✕</button>
-                <h2>Admin Login</h2>
+                <h2>Login Portal</h2>
+                <p style={{textAlign: "center", color: "#666", marginBottom: "20px"}}>
+                    Enter your credentials to access your dashboard
+                </p>
                 <form onSubmit={handleSubmit}>
                     <div className="form-group">
-                        <label>Username</label>
+                        <label>Username/Email</label>
                         <input
                             type="text"
-                            placeholder="Enter username"
+                            placeholder="Enter username (admin) or email (founder)"
                             value={username}
                             onChange={(e) => setUsername(e.target.value)}
                             required
@@ -58,8 +92,15 @@ export default function LoginModal({ onClose }) {
                             required
                         />
                     </div>
-                    <button type="submit" className="login-btn">Login</button>
+                    <button type="submit" className="login-btn" disabled={loading}>
+                        {loading ? "Logging in..." : "Login"}
+                    </button>
                 </form>
+                <div className="login-help">
+                    <p><strong>Demo Accounts:</strong></p>
+                    <p><strong>Admin:</strong> superadmin / super123</p>
+                    <p><strong>Founder:</strong> john@startup.com / startup123</p>
+                </div>
             </div>
         </div>
     );
