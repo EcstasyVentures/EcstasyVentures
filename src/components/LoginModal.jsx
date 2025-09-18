@@ -13,7 +13,6 @@ export default function LoginModal({ onClose }) {
         setLoading(true);
 
         try {
-            // 🎯 FIRST: Try Admin Login
             const adminRes = await fetch("http://localhost:5000/login", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
@@ -22,7 +21,6 @@ export default function LoginModal({ onClose }) {
             const adminData = await adminRes.json();
 
             if (adminData.success) {
-                // ✅ Admin Login Successful
                 localStorage.setItem("username", adminData.username);
                 localStorage.setItem("role", adminData.role);
                 localStorage.setItem("permissions", JSON.stringify(adminData.permissions));
@@ -32,7 +30,6 @@ export default function LoginModal({ onClose }) {
                 return;
             }
 
-            // 🎯 SECOND: Try Founder Login (treat username as email)
             const founderRes = await fetch("http://localhost:5000/api/founder-login", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
@@ -41,7 +38,6 @@ export default function LoginModal({ onClose }) {
             const founderData = await founderRes.json();
 
             if (founderData && founderData.success) {
-                // ✅ Founder Login Successful
                 localStorage.setItem("founderId", founderData.founderId);
                 localStorage.setItem("founderName", founderData.name);
                 localStorage.setItem("username", founderData.name); // For consistency
@@ -52,7 +48,6 @@ export default function LoginModal({ onClose }) {
                 return;
             }
 
-            // ❌ Both failed
             alert("❌ Invalid credentials. Please check your username/email and password.");
 
         } catch (err) {
