@@ -7,12 +7,10 @@ export default function Header() {
     const [showLogin, setShowLogin] = useState(false);
     const [darkMode, setDarkMode] = useState(false);
 
-    // Toggle dark mode
     const toggleDarkMode = () => {
         setDarkMode(!darkMode);
     };
 
-    // Apply theme class to body when darkMode changes
     useEffect(() => {
         if (darkMode) {
             document.body.classList.add('dark-theme');
@@ -20,11 +18,9 @@ export default function Header() {
             document.body.classList.remove('dark-theme');
         }
 
-        // Save theme preference to localStorage
         localStorage.setItem('theme', darkMode ? 'dark' : 'light');
     }, [darkMode]);
 
-    // Check for saved theme preference or respect OS preference
     useEffect(() => {
         const savedTheme = localStorage.getItem('theme');
         const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;

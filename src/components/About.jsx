@@ -1,6 +1,5 @@
 import React from "react";
-import "../styles.css"; // Or import "../about-styles.css"; if you're using a separate CSS file
-
+import "../styles.css"; 
 export default function About() {
     const missionPoints = [
         "Break early-stage barriers that prevent startups from reaching their full potential.",
@@ -47,7 +46,6 @@ export default function About() {
 
     return (
         <main className="container">
-            {/* Our Story */}
             <section className="section">
                 <div className="center">
                     <h3>Our Story</h3>
@@ -57,7 +55,6 @@ export default function About() {
                     </p>
                 </div>
 
-                {/* Mission & Vision */}
                 <div className="mission-vision-grid">
                     <div className="card">
                         <h4>Mission</h4>
@@ -78,7 +75,6 @@ export default function About() {
                 </div>
             </section>
 
-            {/* Core Values */}
             <section className="section">
                 <h3 className="center">Core Values</h3>
                 <div className="grid grid-3">
@@ -91,7 +87,6 @@ export default function About() {
                 </div>
             </section>
 
-            {/* Extra Section: Why Startups Love Us */}
             <section className="section">
                 <h3 className="center">Why Startups Love Us</h3>
                 <div className="grid grid-3">

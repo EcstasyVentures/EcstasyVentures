@@ -24,9 +24,6 @@ export default function Portfolio() {
         <main className="container">
             <section className="section center">
                 <h3>Portfolio</h3>
-                <p className="small portfolio-intro">
-                    We’ll showcase real case studies here. For now, these are placeholders to show the layout.
-                </p>
                 <div className="grid grid-3">
                     {portfolioItems.map((item, idx) => (
                         <div className="card" key={idx}>
