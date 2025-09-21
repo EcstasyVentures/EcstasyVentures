@@ -16,7 +16,7 @@ export default function Footer() {
             <div className="footer-content">
                 <div className="footer-brand">
                     <div className="logo-mark">
-                        <img src="/logo.jpg" alt="Ecstasy Ventures Logo" />
+                        {/* <img src="/logo.jpg" alt="Ecstasy Ventures Logo" /> */}
                     </div>
                     <h2 className="brand-name">Ecstasy Ventures</h2>
                     <p className="tagline">By a startup. For the startups.</p>
@@ -27,31 +27,31 @@ export default function Footer() {
                         <h3>Company</h3>
                         <ul>
                             <li><Link to="/about">About Us</Link></li>
-                            <li><Link to="/team">Our Team</Link></li>
-                            <li><Link to="/careers">Careers</Link></li>
+                            {/* <li><Link to="/team">Our Team</Link></li> */}
+                            {/* <li><Link to="/careers">Careers</Link></li> */}
                             <li><Link to="/contact">Contact</Link></li>
-                        </ul>
-                    </div>
-
-                    <div className="footer-column">
-                        <h3>Resources</h3>
-                        <ul>
-                            <li><Link to="/blog">Blog</Link></li>
-                            <li><Link to="/resources">Resources</Link></li>
-                            <li><Link to="/events">Events</Link></li>
                             <li><Link to="/faq">FAQ</Link></li>
+                            <li><Link to="/terms">Terms & Conditions</Link></li>
                         </ul>
                     </div>
 
-                    <div className="footer-column">
-                        <h3>Legal</h3>
+                    {/* <div className="footer-column"> */}
+                        {/* <h3>Resources</h3> */}
+                        {/* <ul> */}
+                            {/* <li><Link to="/blog">Blog</Link></li> */}
+                            {/* <li><Link to="/resources">Resources</Link></li> */}
+                            {/* <li><Link to="/events">Events</Link></li> */}
+                        {/* </ul> */}
+                    {/* </div> */}
+
+                    {/* <div className="footer-column"> */}
+                        {/* <h3>Legal</h3> */}
                         <ul>
-                            <li><Link to="/terms">Terms & Conditions</Link></li>
-                            <li><Link to="/privacy">Privacy Policy</Link></li>
-                            <li><Link to="/cookies">Cookie Policy</Link></li>
-                            <li><Link to="/disclaimer">Disclaimer</Link></li>
+                            {/* <li><Link to="/privacy">Privacy Policy</Link></li> */}
+                            {/* <li><Link to="/cookies">Cookie Policy</Link></li> */}
+                            {/* <li><Link to="/disclaimer">Disclaimer</Link></li> */}
                         </ul>
-                    </div>
+                    {/* </div> */}
                 </div>
 
                 <div className="footer-newsletter">
@@ -77,7 +77,7 @@ export default function Footer() {
                 </div>
 
                 <div className="copyright">
-                    © {new Date().getFullYear()} Ecstasy Ventures. All rights reserved.
+                    © {new Date().getFullYear()} | Ecstasy Ventures by Strivio Pvt. Ltd. | All rights reserved.
                 </div>
 
                 <button className="back-to-top" onClick={scrollToTop} aria-label="Back to top">

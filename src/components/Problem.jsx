@@ -1,15 +1,26 @@
 import "../styles.css";
+import ScrollReveal from './ScrollReveal';
 
 export default function Problem() {
     return (
         <section className="section" id="problem">
             <div>
                 <h3>The Problem</h3>
-                <p>
+                <ScrollReveal
+
+  baseOpacity={0}
+
+  enableBlur={true}
+
+  baseRotation={5}
+
+  blurStrength={10}
+
+>
                     90% of startups fail within five years. The top contributors are
                     product-market fit issues, running out of cash, and a weak or misaligned team.
                     We tackle the last two directly with our service-for-equity model.
-                </p>
+                    </ScrollReveal>
 
                 <div className="grid-3">
                     <div className="card">
