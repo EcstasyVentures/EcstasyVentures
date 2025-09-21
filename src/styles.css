@@ -275,7 +275,7 @@ header img {
 
 /* --- Section --- */
 .section {
-    padding: 140px 100px;
+    padding: 100px 0;
     text-align: center;
     background: var(--background);
     position: relative;
@@ -838,58 +838,115 @@ header img {
 }
 
 /* --- About Page Specific Styles --- */
+.container {
+    padding: 0;
+}
+
 .section {
     padding: 100px 0;
     text-align: center;
-    background-color: #000; /* Set background to black */
-    color: var(--text-light); /* Adjust text color for better contrast on black */
 }
 
-.container-fluid { /* Assuming this is the main container for sections */
-    background-color: #000; /* Ensures the whole page background is black */
+.center {
+    text-align: center;
+}
+
+.about-story-container {
+    background: linear-gradient(145deg, #1a1a1a, #0f0f0f);
+    border-radius: 20px;
+    padding: 40px;
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 107, 53, 0.1);
+    margin: 30px auto;
+    max-width: 90%;
+    position: relative;
+    overflow: hidden;
+    animation: containerFadeIn 1s ease-out forwards;
+}
+
+.about-story-container::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle at center, rgba(255, 107, 53, 0.08) 0%, transparent 60%);
+    animation: rotateGradient 15s linear infinite;
+    z-index: 0;
+    pointer-events: none;
+}
+
+@keyframes rotateGradient {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+@keyframes containerFadeIn {
+    0% { opacity: 0; transform: translateY(30px); }
+    100% { opacity: 1; transform: translateY(0); }
 }
 
 .about-story {
     font-family: 'Times New Roman', Times, serif;
-    font-size: 18px;
-    max-width: 70ch;
+    font-size: 20px;
+    max-width: 90%;
     margin: 12px auto 0;
     color: var(--text-muted);
+    position: relative;
+    z-index: 1;
 }
 
-/* Ensure other elements within the section also have appropriate colors */
-.section h2, .section h3, .section h4 {
-    color: var(--primary); /* Assuming --primary is a bright accent color */
+.about-story p {
+    margin-bottom: 16px;
+    opacity: 0;
+    transform: translateY(20px);
+    animation: textFadeIn 0.8s ease-out forwards;
 }
 
-.section p {
-    color: var(--text-light);
+.about-story p:nth-child(1) { animation-delay: 0.2s; }
+.about-story p:nth-child(2) { animation-delay: 0.4s; }
+.about-story p:nth-child(3) { animation-delay: 0.6s; }
+.about-story p:nth-child(4) { animation-delay: 0.8s; }
+.about-story p:nth-child(5) { animation-delay: 1.0s; }
+.about-story p:nth-child(6) { animation-delay: 1.2s; }
+.about-story p:nth-child(7) { animation-delay: 1.4s; }
+.about-story p:nth-child(8) { animation-delay: 1.6s; }
+.about-story p:nth-child(9) { animation-delay: 1.8s; }
+
+@keyframes textFadeIn {
+    0% { opacity: 0; transform: translateY(20px); }
+    100% { opacity: 1; transform: translateY(0); }
 }
 
-/* Style for the boxes containing the mission/vision points */
-/* --- Mission/Vision Section --- */
+.about-list {
+    list-style-position: inside;
+    margin: 10px 0 20px 20px;
+    color: var(--text-muted);
+    font-size: 20px;
+    font-family: 'Times New Roman', Times, serif;
+    opacity: 0;
+    transform: translateY(20px);
+    animation: textFadeIn 0.8s ease-out forwards;
+    animation-delay: 1.2s;
+}
+
+.about-list li {
+    margin-bottom: 8px;
+    position: relative;
+    padding-left: 10px;
+}
+
+.about-story strong {
+    color: var(--secondary);
+    font-weight: 700;
+}
+
 .mission-vision-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 25px;
     margin-top: 50px;
-}
-
-.mission-vision-grid .mission-box,
-.mission-vision-grid .vision-box {
-    background-color: #1a1a1a; /* Dark background for each container */
-    padding: 30px;
-    border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
-    color: var(--text-light); /* Ensure text is visible */
-}
-
-.mission-vision-grid .mission-box h3,
-.mission-vision-grid .vision-box h3 {
-    color: #ffffff; /* Titles in white */
-    font-size: 24px;
-    font-weight: 700;
-    margin-bottom: 15px;
+    text-align: left;
 }
 
 .mission-vision-grid ul {
@@ -901,28 +958,22 @@ header img {
     font-size: 17px;
     line-height: 1.7;
     margin-bottom: 12px;
-    color: var(--text-light);
+    color: var(--text-dark);
 }
 
-/* Adjust card backgrounds and text for dark theme */
-.card {
-    background-color: #1a1a1a; /* Darker background for cards */
-    color: var(--text-light);
-    padding: 30px;
-    border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+.grid {
+    display: flex;
+    justify-content: center;
+    gap: 40px;
+    flex-wrap: wrap;
+    margin-top: 16px;
 }
 
-/* Make card titles white */
-.card h2,
-.card h3,
-.card h4,
-.card h5,
-.card h6 {
-    color: #ffffff;
-    font-weight: 700;
+.grid.grid-3 {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 40px;
 }
-
 
 .card h4 {
     font-size: 28px;
@@ -933,30 +984,19 @@ header img {
 
 .card strong {
     font-size: 20px;
-    color: var(--primary); /* Keep strong text prominent */
+    color: var(--text-dark);
     font-weight: 700;
 }
 
 .card .small {
     margin-top: 20px;
-    color: var(--text-muted); /* Muted light color */
+    color: var(--text-light);
     font-weight: 400;
     font-size: 18px;
     line-height: 1.6;
     opacity: 0.8;
 }
 
-/* If there are specific containers for the intro text that are not cards,
-   you might need to add a class and style them similarly.
-   Example:
-.intro-text-container {
-    background-color: #1a1a1a;
-    padding: 40px;
-    border-radius: 8px;
-    margin: 0 auto 50px auto;
-    max-width: 900px;
-}
-*/
 /* --- Service Page Specific Styles --- */
 .service-intro {
     font-family: 'Times New Roman', Times, serif;

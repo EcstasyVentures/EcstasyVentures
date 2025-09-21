@@ -49,10 +49,44 @@ export default function About() {
             <section className="section">
                 <div className="center">
                     <h3>Our Story</h3>
-                    <p className="small about-story">
-                        Ecstasy Ventures was founded by entrepreneurs who lived the early-stage grind. We built this company because founders shouldn't have to choose between building a product and paying the bills.
-                        <strong> We provide teams, technology, branding, and growth support to startups in exchange for fair equity.</strong> Our goal is to help startups reach investor readiness faster and scale sustainably.
-                    </p>
+                    <div className="about-story-container">
+                        <div className="about-story">
+                            <p className="small">
+                                Every great venture begins with a question. For us, it was simple: 
+                                "Why do so many brilliant startup ideas in India never see the light of day?"
+                            </p>
+                            <p className="small">
+                                In 2024, our Founder & CEO, Jigar Shah, witnessed firsthand how thousands of aspiring entrepreneurs—especially from Tier-2 and Tier-3 India—struggled to take their ideas forward. The challenges weren't passion or innovation, but a lack of the right ecosystem: no access to advanced technology, no guidance on branding, complicated legal hurdles, and limited connections with investors.
+                            </p>
+                            <p className="small">
+                                That gap gave birth to Ecstasy Ventures Pvt Ltd (under Strivio Pvt Ltd).
+                            </p>
+                            <p className="small">
+                                We started with a bold belief:<br />
+                                👉 <strong>"By a startup, for the startups."</strong>
+                            </p>
+                            <p className="small">
+                                Unlike traditional agencies or consultants, Ecstasy Ventures was built as a co-builder—a true partner for founders. Our unique equity-plus-services model ensures we grow with the startups we support.
+                            </p>
+                            <p className="small">
+                                From the very beginning, our mission has been clear:
+                            </p>
+                            <ul className="about-list">
+                                <li>To make entrepreneurship accessible for every founder.</li>
+                                <li>To provide end-to-end support in tech, branding, legal, and investor readiness.</li>
+                                <li>To create a movement of founders, not just a company.</li>
+                            </ul>
+                            <p className="small">
+                                Today, Ecstasy Ventures is more than a venture studio. It's a startup ecosystem enabler, designed to empower 1,000+ entrepreneurs in the coming decade, and prove to the world that world-class businesses can rise from every corner of India.
+                            </p>
+                            <p className="small">
+                                This is not just our story—it's the story of every founder who dares to dream, and every idea that deserves to scale.
+                            </p>
+                            <p className="small">
+                                ✨ <strong>Ecstasy Ventures – Execution > Ideas.</strong>
+                            </p>
+                        </div>
+                    </div>
                 </div>
 
                 <div className="mission-vision-grid">
