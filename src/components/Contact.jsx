@@ -118,7 +118,16 @@ export default function Contact() {
                             >
                                 {isSubmitting ? 'Sending...' : 'Send Message'}
                             </button>
-                            <a className="btn" href="mailto:jigar@ecstasyventures.com">Or Email Directly</a>
+
+                            {/* Gmail direct link */}
+                            <a
+                                className="btn"
+                                href="https://mail.google.com/mail/?view=cm&fs=1&to=jigar@ecstasyventures.com&su=Partnership+Inquiry&body=Hi+Jigar,"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                            >
+                                Or Email Directly
+                            </a>
                         </div>
                     </form>
                 </div>

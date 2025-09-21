@@ -36,7 +36,7 @@ export default function Header() {
                 {/* Section 1: Top header with logo, tagline, and navigation */}
                 <div className="header-top">
                     <div className="brand">
-                        <img src="/logo.jpg" alt="Ecstasy Ventures" />
+                        <img src="/logo.png" alt="Ecstasy Ventures" />
                         <div>
                             <h1>Ecstasy Ventures</h1>
                             <p>By a startup. For the startups.</p>

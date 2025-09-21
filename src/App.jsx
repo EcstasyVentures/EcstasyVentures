@@ -9,6 +9,7 @@ import Services from "./components/Services";
 import Portfolio from "./components/Portfolio";
 import Contact from "./components/Contact";
 import Terms from "./components/Terms";
+import FAQ from "./components/FAQ";
 import Footer from "./components/Footer";
 import Dashboard from "./components/Dashboard";
 import FounderDashboard from "./components/FounderDashboard"; // ✅ Added import
@@ -149,6 +150,33 @@ export default function App() {
                         } 
                     />
                     <Route path="/terms" element={<Terms />} />
+                    <Route 
+                        path="/faq" 
+                        element={
+                            <>
+                                <div className="liquid-ether-background">
+                                    <LiquidEther
+                                        colors={['#5227FF', '#FF9FFC', '#B19EEF']}
+                                        mouseForce={20}
+                                        cursorSize={100}
+                                        isViscous={false}
+                                        viscous={30}
+                                        iterationsViscous={32}
+                                        iterationsPoisson={32}
+                                        resolution={0.5}
+                                        isBounce={false}
+                                        autoDemo={true}
+                                        autoSpeed={0.5}
+                                        autoIntensity={2.2}
+                                        takeoverDuration={0.25}
+                                        autoResumeDelay={3000}
+                                        autoRampDuration={0.6}
+                                    />
+                                </div>
+                                <FAQ />
+                            </>
+                        } 
+                    />
 
                     {/* Dashboards (no header/footer) */}
                     <Route path="/dashboard" element={<Dashboard />} />
