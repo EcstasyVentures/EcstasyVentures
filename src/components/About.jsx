@@ -83,7 +83,7 @@ export default function About() {
                                 This is not just our story—it's the story of every founder who dares to dream, and every idea that deserves to scale.
                             </p>
                             <p className="small">
-                                ✨ <strong>Ecstasy Ventures – Execution > Ideas.</strong>
+                                ✨ <strong>Ecstasy Ventures – Execution &gt; Ideas.</strong>
                             </p>
                         </div>
                     </div>
