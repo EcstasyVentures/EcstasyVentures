@@ -37,6 +37,7 @@ export default function Header() {
                 <div className="header-top">
                     <div className="brand">
                         <img src="/logo.png" alt="Ecstasy Ventures" />
+                        {/* <img src="/logo.png" alt="Ecstasy Ventures" /> */}
                         <div>
                             <h1>Ecstasy Ventures</h1>
                             <p>By a startup. For the startups.</p>
