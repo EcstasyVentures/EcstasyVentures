@@ -978,7 +978,8 @@ header img {
 .card h4 {
     font-size: 28px;
     font-weight: 700;
-    color: var(--primary);
+    /*color: var(--primary);*/
+    color: white;
     margin-bottom: 15px;
 }
 
