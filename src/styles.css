@@ -70,6 +70,7 @@ mark {
     --transition-medium: 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
     --transition-fast: 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
     --card-background: #1e1e1e; /* Dark for cards instead of white */
+    --header-footer: linear-gradient(135deg, var(--primary-dark) 0%, var(--background) 100%);
 }
 
 
@@ -140,6 +141,7 @@ a {
 header {
     display: flex;
     flex-direction: column;
+    background: transparent;
     position: sticky;
     top: 0;
     z-index: 1000;
@@ -153,7 +155,7 @@ header {
     justify-content: space-between;
     align-items: center;
     padding: 25px 100px;
-    background: rgba(26, 26, 26, 0.95);
+    background: transparent; /*rgba(26, 26, 26, 0.95);*/
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
     backdrop-filter: blur(20px);
     border-bottom: 1px solid var(--border-color);
@@ -745,7 +747,7 @@ header img {
 
 .footer {
 
-    background: linear-gradient(135deg, var(--primary-dark) 0%, var(--background) 100%);
+    background: var(--header-footer);
     color: var(--text-light);
     padding: 0;
 
@@ -1311,7 +1313,8 @@ header img {
 
 
 .about-story-container {
-    background: linear-gradient(145deg, #1a1a1a, #0f0f0f);
+    /*background: linear-gradient(145deg, #1a1a1a, #0f0f0f);*/
+    background: rgba(0, 0, 0, 0.089);
     border-radius: 20px;
     padding: 40px;
     box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 107, 53, 0.1);
@@ -1329,8 +1332,8 @@ header img {
     left: -50%;
     width: 200%;
     height: 200%;
-    background: radial-gradient(circle at center, rgba(255, 107, 53, 0.08) 0%, transparent 60%);
-    animation: rotateGradient 15s linear infinite;
+    background: rgba(0,0,0, 0.02);/*radial-gradient(circle at center, rgba(255, 107, 53, 0.08) 0%, transparent 60%);*/
+    /*animation: rotateGradient 15s linear infinite;*/
     z-index: 0;
     pointer-events: none;
 }
