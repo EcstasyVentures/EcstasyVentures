@@ -53,11 +53,16 @@ mark {
 
 :root {
 
-    --primary: #1a1a1a;
-    --primary-dark: #0f0f0f;
+    --primary: #01203c;
+    --primary-dark: #01203c;
+    --primary-light: #01203c;
+    --secondary: #FF5F00;
+    --accent: #CFCB33;
+    /* --primary: #1a1a1a;
+    --primary-dark: ;
     --primary-light: #2a2a2a;
     --secondary: #ff6b35;
-    --accent: #ff8c42;
+    --accent: #ff8c42; */
     --background: #0f0f0f;
     --surface: #1a1a1a;
     --card-bg: #1e1e1e;
@@ -70,7 +75,7 @@ mark {
     --transition-medium: 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
     --transition-fast: 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
     --card-background: #1e1e1e; /* Dark for cards instead of white */
-    --header-footer: linear-gradient(135deg, var(--primary-dark) 0%, var(--background) 100%);
+    --header-footer: linear-gradient(135deg, #0f0f0f 0%, var(--background) 100%);
 }
 
 
@@ -203,7 +208,8 @@ header .brand h1 {
     font-weight: 900;
     letter-spacing: -1px;
     color: var(--text-dark);
-    background: linear-gradient(135deg, var(--text-dark), var(--secondary));
+    /* background: linear-gradient(135deg, var(--text-dark), var(--secondary)); */
+    background: var(--secondary);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -340,13 +346,14 @@ header img {
 
     line-height: 1.05;
     margin-bottom: 30px;
-    background: linear-gradient(135deg, var(--text-dark) 0%, var(--secondary) 50%, var(--accent) 100%);
+    /* background: linear-gradient(135deg, var(--text-dark) 0%, var(--secondary) 50%, var(--accent) 100%); */
+    background: var(--secondary) 50%;
     -webkit-background-clip: text;
 
     -webkit-text-fill-color: transparent;
 
     background-clip: text;
-    text-shadow: 0 0 30px rgba(255, 107, 53, 0.3);
+    /* text-shadow: 0 0 30px rgba(255, 107, 53, 0.3); */
     letter-spacing: -2px;
 }
 
@@ -385,10 +392,10 @@ header img {
 
 .hero-actions .btn-primary {
 
-    background: linear-gradient(135deg, var(--secondary), var(--accent));
+    background:var(--secondary);
     color: white;
 
-    box-shadow: 0 10px 30px rgba(255, 107, 53, 0.4);
+    /* box-shadow: 0 10px 30px rgba(255, 107, 53, 0.4); */
 }
 
 
@@ -397,7 +404,7 @@ header img {
 
     transform: translateY(-6px) scale(1.05);
     box-shadow: 0 15px 40px rgba(255, 107, 53, 0.6);
-    background: linear-gradient(135deg, var(--accent), var(--secondary));
+    background: var(--secondary);
 }
 
 
@@ -418,8 +425,8 @@ header img {
     transform: translateY(-6px) scale(1.05);
     background: rgba(255, 107, 53, 0.1);
     box-shadow: 0 15px 40px rgba(255, 107, 53, 0.3);
-    border-color: var(--accent);
-    color: var(--accent);
+    border-color: var(--secondary);
+    color: var(--secondary);
 }
 
 
@@ -512,7 +519,7 @@ header img {
     margin-bottom: 35px;
     font-weight: 800;
 
-    background: linear-gradient(135deg, var(--text-dark), var(--secondary));
+    background: var(--secondary);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
