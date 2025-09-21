@@ -48,7 +48,7 @@ export default function Header() {
                         <Link to="/services">Services</Link>
                         {/* <Link to="/portfolio">Portfolio</Link> */}
                         <Link to="/contact">Contact</Link>
-                        <button
+                        {/*<button
                             className="admin-btn"
                             onClick={() => setShowLogin(true)}
                         >
@@ -60,7 +60,7 @@ export default function Header() {
                             aria-label="Toggle dark mode"
                         >
                             {darkMode ? '☀️' : '🌙'}
-                        </button>
+                        </button>*/}
                     </nav>
                 </div>
                 
@@ -75,26 +75,6 @@ export default function Header() {
                         Tech & Product Development · Operations & Scaling Support
                     </div>
                 </div>
-                <nav>
-                    <Link to="/">Home</Link>
-                    <Link to="/about">About</Link>
-                    <Link to="/services">Services</Link>
-                    {/* <Link to="/portfolio">Portfolio</Link> */}
-                    <Link to="/contact">Contact</Link>
-                    {/*<button
-                        className="admin-btn"
-                        onClick={() => setShowLogin(true)}
-                    >
-                        Login
-                    </button>
-                    <button
-                        className="theme-toggle"
-                        onClick={toggleDarkMode}
-                        aria-label="Toggle dark mode"
-                    >
-                        {darkMode ? '☀️' : '🌙'}
-                    </button>*/}
-                </nav>
             </header>
             {showLogin && <LoginModal onClose={() => setShowLogin(false)} />}
         </>
