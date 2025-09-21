@@ -67,11 +67,12 @@ export default function Header() {
                 {/* Section 2: Ticker with transparent background */}
                 <div className="ticker-section">
                     <div className="ticker-content">
-                        RISE ABOVE THE NOISE · OWN YOUR CATEGORY · 
-                        RISE ABOVE THE NOISE · OWN YOUR CATEGORY · 
-                        RISE ABOVE THE NOISE · OWN YOUR CATEGORY · 
-                        RISE ABOVE THE NOISE · OWN YOUR CATEGORY · 
-                        RISE ABOVE THE NOISE · OWN YOUR CATEGORY
+                        Startup Funding & Investment · Business Strategy & Mentorship · 
+                        Branding & Marketing · Fundraising Support · 
+                        Tech & Product Development · Operations & Scaling Support · 
+                        Startup Funding & Investment · Business Strategy & Mentorship · 
+                        Branding & Marketing · Fundraising Support · 
+                        Tech & Product Development · Operations & Scaling Support
                     </div>
                 </div>
             </header>

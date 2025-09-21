@@ -161,7 +161,7 @@ header {
 
 /* Section 2: Ticker section */
 .ticker-section {
-    background-color: rgba(0, 0, 0, 0.5); /* Transparent black background */
+    background-color: rgba(0, 0, 0, 1);
     color: white;
     padding: 12px 0;
     overflow: hidden;
@@ -561,7 +561,7 @@ header img {
 
 .card {
 
-    background-color: rgba(0, 0, 0, 0.7);
+    background-color: var(--card-background);
     padding: 50px;
     border-radius: 20px;
     flex: 1;
@@ -660,7 +660,7 @@ header img {
 
 .feature {
 
-    background-color: rgba(0, 0, 0, 0.7);
+    background-color: var(--card-background);
     padding: 40px;
     border-radius: 25px;
 
@@ -2218,9 +2218,9 @@ header img {
 
     --accent-color: #ffdc00; /* Light orange for accents */
 
-    --background-color: #f5f7fa; /* Light gray background */
+    --background-color: #00000000; /* Light gray background */
 
-    --card-background: #1e1e1e; /* Dark for cards */
+    --card-background: #0000009d; /* Dark for cards */
     --text-primary: #333333; /* Dark text */
 
     --text-secondary: #666666; /* Lighter text */
