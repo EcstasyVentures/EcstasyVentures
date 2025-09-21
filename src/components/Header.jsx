@@ -33,11 +33,46 @@ export default function Header() {
     return (
         <>
             <header>
-                <div className="brand">
-                    <img src="/logo.jpg" alt="Ecstasy Ventures" />
-                    <div>
-                        <h1>Ecstasy Ventures</h1>
-                        <p>By a startup. For the startups.</p>
+                {/* Section 1: Top header with logo, tagline, and navigation */}
+                <div className="header-top">
+                    <div className="brand">
+                        <img src="/logo.jpg" alt="Ecstasy Ventures" />
+                        <div>
+                            <h1>Ecstasy Ventures</h1>
+                            <p>By a startup. For the startups.</p>
+                        </div>
+                    </div>
+                    <nav>
+                        <Link to="/">Home</Link>
+                        <Link to="/about">About</Link>
+                        <Link to="/services">Services</Link>
+                        {/* <Link to="/portfolio">Portfolio</Link> */}
+                        <Link to="/contact">Contact</Link>
+                        <button
+                            className="admin-btn"
+                            onClick={() => setShowLogin(true)}
+                        >
+                            Login
+                        </button>
+                        <button
+                            className="theme-toggle"
+                            onClick={toggleDarkMode}
+                            aria-label="Toggle dark mode"
+                        >
+                            {darkMode ? '☀️' : '🌙'}
+                        </button>
+                    </nav>
+                </div>
+                
+                {/* Section 2: Ticker with transparent background */}
+                <div className="ticker-section">
+                    <div className="ticker-content">
+                        Startup Funding & Investment · Business Strategy & Mentorship · 
+                        Branding & Marketing · Fundraising Support · 
+                        Tech & Product Development · Operations & Scaling Support · 
+                        Startup Funding & Investment · Business Strategy & Mentorship · 
+                        Branding & Marketing · Fundraising Support · 
+                        Tech & Product Development · Operations & Scaling Support
                     </div>
                 </div>
                 <nav>
