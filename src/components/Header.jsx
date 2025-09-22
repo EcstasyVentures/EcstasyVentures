@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { useState, useEffect } from "react";
 import LoginModal from "./LoginModal"; // import modal
 import "../styles.css";
+import "../master.css";
 
 export default function Header() {
     const [showLogin, setShowLogin] = useState(false);

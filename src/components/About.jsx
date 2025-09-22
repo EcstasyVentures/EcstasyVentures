@@ -1,5 +1,6 @@
 import React, { useRef, useEffect, useCallback, useState } from "react";
 import "../styles.css";
+import "../master.css";
 
 const InteractiveCard = ({ children, className = '' }) => {
     const cardRef = useRef(null);

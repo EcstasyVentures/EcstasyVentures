@@ -1,6 +1,7 @@
 import { useState } from "react";
 import "../styles.css";
 import { useNavigate } from "react-router-dom";
+import "../master.css";
 
 export default function LoginModal({ onClose }) {
     const [username, setUsername] = useState("");

@@ -1,5 +1,6 @@
 import React from "react";
 import "../styles.css";
+import "../master.css";
 
 export default function Services() {
     const servicePoints = [

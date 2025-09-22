@@ -1,4 +1,5 @@
 import "../styles.css";
+import "../master.css";
 
 export default function Solution() {
     return (

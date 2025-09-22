@@ -1,5 +1,6 @@
 import "../styles.css";
 import ScrollReveal from './ScrollReveal';
+import "../master.css";
 
 export default function Problem() {
     return (

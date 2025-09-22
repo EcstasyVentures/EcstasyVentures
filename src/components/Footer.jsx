@@ -2,6 +2,7 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { FaLinkedin, FaInstagram, FaEnvelope, FaArrowUp } from "react-icons/fa";
 import "../styles.css";
+import "../master.css";
 
 export default function Footer() {
     const scrollToTop = () => {

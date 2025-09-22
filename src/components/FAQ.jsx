@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import '../styles.css';
+import "../master.css";
 
 const FAQ = () => {
   const [activeIndex, setActiveIndex] = useState(null);

@@ -1,0 +1,33 @@
+/* master.css */
+
+/* Global reset */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* Responsive breakpoints */
+@media (max-width: 1200px) { /* Laptops */
+  .container {
+    padding: 20px;
+  }
+}
+
+@media (max-width: 768px) { /* Tablets */
+  .container {
+    padding: 15px;
+  }
+}
+
+@media (max-width: 480px) { /* Mobile */
+  .container {
+    padding: 10px;
+  }
+}
+
+/* Example global typography */
+body {
+  font-family: Arial, sans-serif;
+  font-size: 16px;
+}
