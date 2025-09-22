@@ -794,7 +794,7 @@ header img {
     grid-template-columns: 1.5fr 2.5fr 1.5fr;
 
     gap: 30px;
-    padding: 60px 40px 30px;
+    padding: 20px 10px 5px;
     max-width: 100%;
 
     margin: 0 auto;
@@ -1112,7 +1112,7 @@ header img {
 
     align-items: center;
 
-    padding: 20px 15px;
+    padding: 10px 5px;
     border-top: 1px solid var(--border-color);
     max-width: 100%;
 
