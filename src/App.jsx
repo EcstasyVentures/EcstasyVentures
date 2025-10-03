@@ -229,13 +229,13 @@ export default function App() {
                         } 
                     />
 
-                    {/* 
+                    
                         Dashboards (no header/footer) - COMMENTED OUT FOR PRODUCTION
                         These routes are disabled to prevent public access after deployment.
                         
                         <Route path="/dashboard" element={<Dashboard />} />
                         <Route path="/founder-dashboard" element={<FounderDashboard />} />
-                    */}
+                   
                 </Routes>
             </Layout>
         </Router>

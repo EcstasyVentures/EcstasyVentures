@@ -50,13 +50,13 @@ export default function Header() {
                         <Link to="/services">Services</Link>
                         {/* <Link to="/portfolio">Portfolio</Link> */}
                         <Link to="/contact">Contact</Link>
-                        {/*<button
+                        <button
                             className="admin-btn"
                             onClick={() => setShowLogin(true)}
                         >
                             Login
                         </button>
-                        <button
+                        {/*<button
                             className="theme-toggle"
                             onClick={toggleDarkMode}
                             aria-label="Toggle dark mode"
