@@ -25,7 +25,7 @@ export default function Problem() {
 
                 <div className="grid-3">
                     <div className="card">
-                        <div style={{fontSize: '35px', fontWeight: '800', color:'#ff6a00'}}>42%</div>
+                        <div style={{fontSize: '35px', fontWeight: '1000', color:'#ff6a00'}}>42%</div>
                         <div className="small">No market need</div>
                     </div>
                     <div className="card">

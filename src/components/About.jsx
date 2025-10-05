@@ -364,7 +364,7 @@ export default function About() {
                                 In 2024, our Founder & CEO, Jigar Shah, witnessed firsthand how thousands of aspiring entrepreneurs especially from Tier-2 and Tier-3 India struggled to take their ideas forward. The challenges weren't passion or innovation, but a lack of the right ecosystem: no access to advanced technology, no guidance on branding, complicated legal hurdles, and limited connections with investors.
                             </p>
                             <p className="small">
-                                That gap gave birth to Ecstasy Ventures Pvt Ltd (under Strivio Pvt Ltd).
+                                That gap gave birth to Ecstasy Ventures by Strivio Pvt Ltd.
                             </p>
                             <p className="small">
                                 We started with a bold belief:<br />

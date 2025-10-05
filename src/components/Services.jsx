@@ -37,7 +37,7 @@ export default function Services() {
                 <p className="small service-intro">
                     We provide end-to-end startup execution: product development, design, growth, and investor readiness. You keep your cash — we work for equity.
                 </p>
-                <div className="grid grid-3">
+                <div className="grid grid-4">
                     {servicePoints.map((service, idx) => (
                         <div className="card" key={idx}>
                             <h4>{service.title}</h4>
