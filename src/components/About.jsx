@@ -2,20 +2,21 @@ import React, { useRef, useEffect, useCallback, useState } from "react";
 import "../styles.css";
 import "../master.css";
 
+// --- InteractiveCard Component Definition ---
 const InteractiveCard = ({ children, className = '' }) => {
     const cardRef = useRef(null);
     const particlesRef = useRef([]);
     const timeoutsRef = useRef([]);
     const isHoveredRef = useRef(false);
     const [isMobile, setIsMobile] = useState(false);
-  
+ 
     useEffect(() => {
       const checkMobile = () => setIsMobile(window.innerWidth <= 768);
       checkMobile();
       window.addEventListener('resize', checkMobile);
       return () => window.removeEventListener('resize', checkMobile);
     }, []);
-  
+ 
     const createParticle = (x, y) => {
       const particle = document.createElement('div');
       particle.style.cssText = `
@@ -34,7 +35,7 @@ const InteractiveCard = ({ children, className = '' }) => {
       `;
       return particle;
     };
-  
+ 
     const clearParticles = useCallback(() => {
       timeoutsRef.current.forEach(clearTimeout);
       timeoutsRef.current = [];
@@ -48,14 +49,14 @@ const InteractiveCard = ({ children, className = '' }) => {
       });
       particlesRef.current = [];
     }, []);
-  
+ 
     const animateParticles = useCallback(() => {
       if (!cardRef.current || !isHoveredRef.current) return;
-  
+ 
       for (let i = 0; i < 6; i++) {
         const timeoutId = setTimeout(() => {
           if (!isHoveredRef.current || !cardRef.current) return;
-  
+ 
           const rect = cardRef.current.getBoundingClientRect();
           const x = Math.random() * rect.width;
           const y = Math.random() * rect.height;
@@ -63,13 +64,13 @@ const InteractiveCard = ({ children, className = '' }) => {
           const particle = createParticle(x, y);
           cardRef.current.appendChild(particle);
           particlesRef.current.push(particle);
-  
+ 
           setTimeout(() => {
             particle.style.transition = 'all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55)';
             particle.style.transform = 'scale(1)';
             particle.style.opacity = '1';
           }, 10);
-  
+ 
           const animate = () => {
             if (!isHoveredRef.current) return;
             const moveX = (Math.random() - 0.5) * 40;
@@ -83,24 +84,24 @@ const InteractiveCard = ({ children, className = '' }) => {
             }, 2000);
           };
           setTimeout(animate, 300);
-  
+ 
         }, i * 100);
         timeoutsRef.current.push(timeoutId);
       }
     }, []);
-  
+ 
     useEffect(() => {
       if (isMobile || !cardRef.current) return;
-  
+ 
       const element = cardRef.current;
-  
+ 
       const handleMouseEnter = () => {
         isHoveredRef.current = true;
         animateParticles();
         element.style.transition = 'transform 0.3s ease, box-shadow 0.3s ease';
         element.style.transform = 'perspective(1000px) rotateX(5deg) rotateY(5deg)';
       };
-  
+ 
       const handleMouseLeave = () => {
         isHoveredRef.current = false;
         clearParticles();
@@ -108,31 +109,31 @@ const InteractiveCard = ({ children, className = '' }) => {
         element.style.transform = 'perspective(1000px) rotateX(0deg) rotateY(0deg) translateX(0px) translateY(0px)';
         element.style.boxShadow = '';
       };
-  
+ 
       const handleMouseMove = (e) => {
         const rect = element.getBoundingClientRect();
         const x = e.clientX - rect.left;
         const y = e.clientY - rect.top;
         const centerX = rect.width / 2;
         const centerY = rect.height / 2;
-  
+ 
         const rotateX = ((y - centerY) / centerY) * -10;
         const rotateY = ((x - centerX) / centerX) * 10;
         const magnetX = (x - centerX) * 0.03;
         const magnetY = (y - centerY) * 0.03;
-  
+ 
         element.style.transition = 'transform 0.1s ease';
         element.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateX(${magnetX}px) translateY(${magnetY}px)`;
         
         const intensity = Math.min(1, Math.max(0, 1 - Math.hypot(x - centerX, y - centerY) / (Math.max(rect.width, rect.height) / 2)));
         element.style.boxShadow = `0 0 ${20 * intensity}px rgba(132, 0, 255, ${0.3 * intensity})`;
       };
-  
+ 
       const handleClick = (e) => {
         const rect = element.getBoundingClientRect();
         const x = e.clientX - rect.left;
         const y = e.clientY - rect.top;
-  
+ 
         const ripple = document.createElement('div');
         const maxDistance = Math.max(rect.width, rect.height);
         
@@ -150,7 +151,7 @@ const InteractiveCard = ({ children, className = '' }) => {
           opacity: 1;
           transition: all 0.8s ease;
         `;
-  
+ 
         element.appendChild(ripple);
         setTimeout(() => {
           ripple.style.transform = 'scale(1)';
@@ -158,12 +159,12 @@ const InteractiveCard = ({ children, className = '' }) => {
         }, 10);
         setTimeout(() => ripple.remove(), 800);
       };
-  
+ 
       element.addEventListener('mouseenter', handleMouseEnter);
       element.addEventListener('mouseleave', handleMouseLeave);
       element.addEventListener('mousemove', handleMouseMove);
       element.addEventListener('click', handleClick);
-  
+ 
       return () => {
         element.removeEventListener('mouseenter', handleMouseEnter);
         element.removeEventListener('mouseleave', handleMouseLeave);
@@ -172,7 +173,7 @@ const InteractiveCard = ({ children, className = '' }) => {
         clearParticles();
       };
     }, [animateParticles, clearParticles, isMobile]);
-  
+ 
     return (
         <div
           ref={cardRef}
@@ -189,13 +190,13 @@ const InteractiveCard = ({ children, className = '' }) => {
       );
   };
 
-// Add this GlobalSpotlight component after your InteractiveCard component
+// --- GlobalSpotlight Component Definition ---
 const GlobalSpotlight = ({ containerRef }) => {
     const spotlightRef = useRef(null);
-  
+ 
     useEffect(() => {
       if (!containerRef?.current) return;
-  
+ 
       const spotlight = document.createElement('div');
       spotlight.style.cssText = `
         position: fixed;
@@ -219,22 +220,22 @@ const GlobalSpotlight = ({ containerRef }) => {
       `;
       document.body.appendChild(spotlight);
       spotlightRef.current = spotlight;
-  
+ 
       const handleMouseMove = (e) => {
         if (!spotlightRef.current || !containerRef.current) return;
-  
+ 
         const containerRect = containerRef.current.getBoundingClientRect();
         const mouseInContainer = 
           e.clientX >= containerRect.left && 
           e.clientX <= containerRect.right && 
           e.clientY >= containerRect.top && 
           e.clientY <= containerRect.bottom;
-  
+ 
         if (mouseInContainer) {
           spotlightRef.current.style.left = e.clientX + 'px';
           spotlightRef.current.style.top = e.clientY + 'px';
           spotlightRef.current.style.opacity = '1';
-  
+ 
           // Enhanced glow for cards under spotlight
           const cards = containerRef.current.querySelectorAll('.card');
           cards.forEach(card => {
@@ -252,13 +253,16 @@ const GlobalSpotlight = ({ containerRef }) => {
               `;
               card.style.borderColor = `rgba(132, 0, 255, ${0.5 * intensity})`;
             } else {
-              card.style.boxShadow = '';
-              card.style.borderColor = '';
+              // Only reset if they were previously set by the spotlight effect
+              if (card.style.boxShadow.includes('rgba(132, 0, 255')) {
+                card.style.boxShadow = '';
+                card.style.borderColor = '';
+              }
             }
           });
         } else {
           spotlightRef.current.style.opacity = '0';
-          // Reset card glows
+          // Reset card glows when mouse leaves container
           const cards = containerRef.current.querySelectorAll('.card');
           cards.forEach(card => {
             card.style.boxShadow = '';
@@ -266,7 +270,7 @@ const GlobalSpotlight = ({ containerRef }) => {
           });
         }
       };
-  
+ 
       const handleMouseLeave = () => {
         if (spotlightRef.current) {
           spotlightRef.current.style.opacity = '0';
@@ -278,10 +282,10 @@ const GlobalSpotlight = ({ containerRef }) => {
           card.style.borderColor = '';
         });
       };
-  
+ 
       document.addEventListener('mousemove', handleMouseMove);
       document.addEventListener('mouseleave', handleMouseLeave);
-  
+ 
       return () => {
         document.removeEventListener('mousemove', handleMouseMove);
         document.removeEventListener('mouseleave', handleMouseLeave);
@@ -290,10 +294,12 @@ const GlobalSpotlight = ({ containerRef }) => {
         }
       };
     }, [containerRef]);
-  
+ 
     return null;
   };
 
+
+// --- About Component Definition ---
 export default function About() {
 
     const containerRef = useRef(null);
@@ -344,7 +350,6 @@ export default function About() {
     return (
         <main className="container" ref={containerRef}>
         <GlobalSpotlight containerRef={containerRef} />
-        {/* <main className="container"> */}
         
             <section className="section">
                 <div className="center">
@@ -356,17 +361,17 @@ export default function About() {
                                 "Why do so many brilliant startup ideas in India never see the light of day?"
                             </p>
                             <p className="small">
-                                In 2024, our Founder & CEO, Jigar Shah, witnessed firsthand how thousands of aspiring entrepreneurs—especially from Tier-2 and Tier-3 India—struggled to take their ideas forward. The challenges weren't passion or innovation, but a lack of the right ecosystem: no access to advanced technology, no guidance on branding, complicated legal hurdles, and limited connections with investors.
+                                In 2024, our Founder & CEO, Jigar Shah, witnessed firsthand how thousands of aspiring entrepreneurs especially from Tier-2 and Tier-3 India struggled to take their ideas forward. The challenges weren't passion or innovation, but a lack of the right ecosystem: no access to advanced technology, no guidance on branding, complicated legal hurdles, and limited connections with investors.
                             </p>
                             <p className="small">
                                 That gap gave birth to Ecstasy Ventures Pvt Ltd (under Strivio Pvt Ltd).
                             </p>
                             <p className="small">
                                 We started with a bold belief:<br />
-                                👉 <strong>"By a startup, for the startups."</strong>
+                                <strong>"By a startup, for the startups."</strong>
                             </p>
                             <p className="small">
-                                Unlike traditional agencies or consultants, Ecstasy Ventures was built as a co-builder—a true partner for founders. Our unique equity-plus-services model ensures we grow with the startups we support.
+                                Unlike traditional agencies or consultants, Ecstasy Ventures was built as a co-builder a true partner for founders. Our unique equity plus services model ensures we grow with the startups we support.
                             </p>
                             <p className="small">
                                 From the very beginning, our mission has been clear:
@@ -380,65 +385,43 @@ export default function About() {
                                 Today, Ecstasy Ventures is more than a venture studio. It's a startup ecosystem enabler, designed to empower 1,000+ entrepreneurs in the coming decade, and prove to the world that world-class businesses can rise from every corner of India.
                             </p>
                             <p className="small">
-                                This is not just our story—it's the story of every founder who dares to dream, and every idea that deserves to scale.
+                                This is not just our story it's the story of every founder who dares to dream, and every idea that deserves to scale.
                             </p>
                             <p className="small">
-                                ✨ <strong>Ecstasy Ventures – Execution &gt; Ideas.</strong>
+                                <strong>Ecstasy Ventures – Execution &gt; Ideas.</strong>
                             </p>
                         </div>
                     </div>
                 </div>
+                
+                <style jsx>{`
+                    @media (max-width: 768px) {
+                        .about-story {
+                            text-align: left !important;
+                        }
+                    }
+                `}</style>
 
-                {/* <div className="mission-vision-grid">
-                    <div className="card">
+                <div className="mission-vision-grid">
+                    <InteractiveCard className="card">
                         <h4>Mission</h4>
                         <ul>
                             {missionPoints.map((point, idx) => (
                                 <li key={idx}>{point}</li>
                             ))}
                         </ul>
-                    </div>
-                    <div className="card">
+                    </InteractiveCard>
+                    <InteractiveCard className="card">
                         <h4>Vision</h4>
                         <ul>
                             {visionPoints.map((point, idx) => (
                                 <li key={idx}>{point}</li>
                             ))}
                         </ul>
-                    </div>
-                </div> */}
-                <div className="mission-vision-grid">
-                  <InteractiveCard className="card">
-                    <h4>Mission</h4>
-                    <ul>
-                      {missionPoints.map((point, idx) => (
-                        <li key={idx}>{point}</li>
-                      ))}
-                    </ul>
-                  </InteractiveCard>
-                  <InteractiveCard className="card">
-                    <h4>Vision</h4>
-                    <ul>
-                      {visionPoints.map((point, idx) => (
-                        <li key={idx}>{point}</li>
-                      ))}
-                    </ul>
-                  </InteractiveCard>
+                    </InteractiveCard>
                 </div>
             </section>
 
-            {/* <section className="section">
-                <h3 className="center">Core Values</h3>
-                
-                <div className="grid grid-3" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.5rem', alignItems: 'start' }}>
-                  {coreValues.map((value, idx) => (
-                    <InteractiveCard className="card" key={idx}>
-                      <strong>{value.title}</strong>
-                      <div className="small">{value.desc}</div>
-                    </InteractiveCard>
-                  ))}
-                </div>
-            </section> */}
             <section className="section">
                 <h3 className="center">Core Values</h3>
                 <div 
@@ -471,7 +454,6 @@ export default function About() {
                     ))}
                 </div>
                 
-                {/* Add responsive styles */}
                 <style jsx>{`
                     @media (max-width: 1024px) {
                         .core-values-grid {
@@ -490,33 +472,19 @@ export default function About() {
 
             <section className="section">
                 <h3 className="center">Why Startups Love Us</h3>
-                {/* <div className="grid grid-3">
-                    <div className="card">
+                <div className="grid grid-3" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.5rem', alignItems: 'start' }}>
+                    <InteractiveCard className="card">
                         <strong>End-to-End Support</strong>
                         <p className="small">We handle product, branding, marketing, and growth — so founders can focus entirely on their vision.</p>
-                    </div>
-                    <div className="card">
+                    </InteractiveCard>
+                    <InteractiveCard className="card">
                         <strong>Equity-Based Model</strong>
                         <p className="small">No upfront fees. We succeed only when you succeed, aligning our incentives with your startup's growth.</p>
-                    </div>
-                    <div className="card">
+                    </InteractiveCard>
+                    <InteractiveCard className="card">
                         <strong>Investor Network</strong>
                         <p className="small">Access our network of investors, mentors, and strategic partners to accelerate funding and scaling opportunities.</p>
-                    </div>
-                </div> */}
-                <div className="grid grid-3" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.5rem', alignItems: 'start' }}>
-                  <InteractiveCard className="card">
-                    <strong>End-to-End Support</strong>
-                    <p className="small">We handle product, branding, marketing, and growth — so founders can focus entirely on their vision.</p>
-                  </InteractiveCard>
-                  <InteractiveCard className="card">
-                    <strong>Equity-Based Model</strong>
-                    <p className="small">No upfront fees. We succeed only when you succeed, aligning our incentives with your startup's growth.</p>
-                  </InteractiveCard>
-                  <InteractiveCard className="card">
-                    <strong>Investor Network</strong>
-                    <p className="small">Access our network of investors, mentors, and strategic partners to accelerate funding and scaling opportunities.</p>
-                  </InteractiveCard>
+                    </InteractiveCard>
                 </div>
             </section>
         </main>
