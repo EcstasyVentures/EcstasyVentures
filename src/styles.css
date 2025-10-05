@@ -119,6 +119,7 @@ main {
 /* Ensure all page content is visible over LiquidEther */
 .about-page,
 .services-page,
+.footer,
 .contact-page {
     position: relative;
     z-index: 1;
@@ -752,7 +753,7 @@ header img {
 
 
 .footer {
-    background: var(--header-footer);
+    background: rgba(0, 0, 0, 0.6);
     color: var(--text-light);
     padding: 0;
 
