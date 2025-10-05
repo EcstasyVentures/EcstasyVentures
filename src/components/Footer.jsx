@@ -27,9 +27,9 @@ export default function Footer() {
                     <div className="footer-column">
                         <h3>Company</h3>
                         <ul>
+                            <li><Link to="/home">Home</Link></li>
                             <li><Link to="/about">About Us</Link></li>
-                            {/* <li><Link to="/team">Our Team</Link></li> */}
-                            {/* <li><Link to="/careers">Careers</Link></li> */}
+                            <li><Link to="/services">Services</Link></li>
                             <li><Link to="/contact">Contact</Link></li>
                             <li><Link to="/faq">FAQ</Link></li>
                             <li><Link to="/terms">Terms & Conditions</Link></li>
